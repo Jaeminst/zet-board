@@ -1,6 +1,5 @@
+import { Navbar } from '@/components/Navbar';
 import './globals.css';
-
-import Nav from './nav';
 import Toast from './toast';
 import { Suspense } from 'react';
 
@@ -17,9 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full bg-gray-50">
-      <body className="h-full">
+      <body className="flex min-h-screen w-full">
         <Suspense>
-          <Nav />
+          <Navbar />
         </Suspense>
         {children}
         <Toast />
