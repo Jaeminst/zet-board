@@ -1,4 +1,3 @@
-import { sql } from '@vercel/postgres';
 import { Card, Title, Text } from '@tremor/react';
 import Search from './search';
 import UsersTable from './table';
@@ -16,12 +15,16 @@ export default async function IndexPage({
   searchParams: { q: string };
 }) {
   const search = searchParams.q ?? '';
-  const result = await sql`
-    SELECT id, name, username, email 
-    FROM users 
-    WHERE name ILIKE ${'%' + search + '%'};
-  `;
-  const users = result.rows as User[];
+  const result = [{
+    id: 0,
+    name: 'hello',
+    username: 'jmlee',
+    email: 'jmlee@marketboro.com'
+  }];
+  const filteredResult = result.filter(item =>
+    item.name.includes(search) || item.username.includes(search) || item.email.includes(search)
+  );
+  const users = filteredResult as User[];
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
