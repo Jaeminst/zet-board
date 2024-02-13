@@ -1,9 +1,26 @@
 import { Button } from "@/components/ui/button"
-import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog } from "@/components/ui/dialog"
+import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { PlusIcon } from "lucide-react"
+import { useState } from "react";
 
-export function AddProfile() {
+interface Profile {
+  environment: string;
+  accessKey: string;
+  secretKey: string;
+}
+
+interface AddProfileProps {
+  onAddProfile: (newProfile: Profile) => void;
+}
+
+export function AddProfile({ onAddProfile }: AddProfileProps) {
+  const [profileData, setProfileData] = useState({ environment: '', accessKey: '', secretKey: '' });
+  const handleSubmit = () => {
+    onAddProfile(profileData);
+    setProfileData({ environment: '', accessKey: '', secretKey: '' });
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -21,23 +38,40 @@ export function AddProfile() {
             <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="profile">
               Profile
             </label>
-            <Input id="profile" placeholder="Enter your profile" />
+            <Input
+              id="profile"
+              placeholder="Enter your profile"
+              value={profileData.environment}
+              onChange={(e) => setProfileData({ ...profileData, environment: e.target.value })}
+            />
           </div>
           <div className="flex flex-col">
             <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="access-key">
               Access Key
             </label>
-            <Input id="access-key" placeholder="Enter your access key" />
+            <Input
+              id="access-key"
+              placeholder="Enter your access key"
+              value={profileData.accessKey}
+              onChange={(e) => setProfileData({ ...profileData, accessKey: e.target.value })}
+            />
           </div>
           <div className="flex flex-col">
             <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="secret-key">
               Secret Key
             </label>
-            <Input id="secret-key" placeholder="Enter your secret key" />
+            <Input
+              id="secret-key"
+              placeholder="Enter your secret key"
+              value={profileData.secretKey}
+              onChange={(e) => setProfileData({ ...profileData, secretKey: e.target.value })}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button className="ml-auto">Enter</Button>
+          <DialogClose asChild>
+            <Button type="submit" className="ml-auto" onClick={handleSubmit}>Enter</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

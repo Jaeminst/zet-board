@@ -7,6 +7,12 @@ import UsersTable from './table';
 import { AddProfile } from './add-profile';
 
 interface Profile {
+  environment: string;
+  accessKey: string;
+  secretKey: string;
+}
+
+interface ProfileList {
   idx: number;
   environment: string;
   accountId: string;
@@ -19,7 +25,6 @@ export default function IndexPage({
 }: {
   searchParams: { q: string };
 }) {
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('Select Profile');
   const result = [{
     idx: 0,
     environment: 'dev',
@@ -27,15 +32,26 @@ export default function IndexPage({
     selectRole: 'Administrator',
     roles: ['Administrator','Developers'],
   }];
-  const search = searchParams.q ?? '';
-  const filteredResult = result.filter(item =>
-    item.environment.includes(search) || item.accountId.includes(search) || item.selectRole.includes(search)
-  );
-  const profiles = filteredResult as Profile[];
-
+  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('Select Profile');
   const handleSelectEnvironment = (environment: string): void => {
     setSelectedEnvironment(environment);
   };
+  const [profiles, setProfiles] = useState([...result]); // result 초기값으로 profiles 상태를 설정
+  const addProfileToResult = (newProfile: Profile) => {
+    setProfiles(prevProfiles => [...prevProfiles, {
+      idx: prevProfiles.length + 1,
+      environment: newProfile.environment,
+      accountId: '123456789012',
+      selectRole: 'Administrator',
+      roles: ['Administrator','Developers'],
+    }]);
+  };
+
+  const search = searchParams.q ?? '';
+  const filteredResult = profiles.filter(item =>
+    item.environment.includes(search) || item.accountId.includes(search) || item.selectRole.includes(search)
+  );
+  const searchProfiles = filteredResult as ProfileList[];
 
   return (
     <Suspense>
@@ -63,9 +79,9 @@ export default function IndexPage({
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
           <div className="border shadow-sm rounded-lg p-2">
-            <UsersTable profiles={profiles} />
+            <UsersTable profiles={searchProfiles} />
           </div>
-          <AddProfile />
+          <AddProfile onAddProfile={addProfileToResult} />
         </main>
       </div>
     </Suspense>
