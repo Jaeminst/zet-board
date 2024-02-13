@@ -3,6 +3,7 @@ import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog, Dialo
 import { Input } from "@/components/ui/input"
 import { PlusIcon } from "lucide-react"
 import { useState } from "react";
+import { useProfile } from '@/components/ProfileContext';
 
 interface Profile {
   environment: string;
@@ -10,15 +11,21 @@ interface Profile {
   secretKey: string;
 }
 
-interface AddProfileProps {
-  onAddProfile: (newProfile: Profile) => void;
-}
-
-export function AddProfile({ onAddProfile }: AddProfileProps) {
+export function AddProfile() {
+  const [profileList, setProfileList] = useProfile();
   const [profileData, setProfileData] = useState({ environment: '', accessKey: '', secretKey: '' });
   const handleSubmit = () => {
-    onAddProfile(profileData);
+    addProfileToResult(profileData);
     setProfileData({ environment: '', accessKey: '', secretKey: '' });
+  };
+  const addProfileToResult = (newProfile: Profile) => {
+    setProfileList(prevProfiles => [...prevProfiles, {
+      idx: prevProfiles.length + 1,
+      environment: newProfile.environment,
+      accountId: '123456789012',
+      selectRole: 'Administrator',
+      roles: ['Administrator','Developers'],
+    }]);
   };
 
   return (

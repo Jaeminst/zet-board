@@ -1,54 +1,44 @@
 'use client';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Search from './search';
 import UsersTable from './table';
 import { AddProfile } from './add-profile';
-
-interface Profile {
-  environment: string;
-  accessKey: string;
-  secretKey: string;
-}
+import { useProfile } from '@/components/ProfileContext';
 
 interface ProfileList {
   idx: number;
   environment: string;
   accountId: string;
   selectRole: string;
-  roles: [string];
+  roles: string[];
 }
+
+const result = [{
+  idx: 0,
+  environment: 'dev',
+  accountId: '123456789012',
+  selectRole: 'Administrator',
+  roles: ['Administrator','Developers'],
+}];
 
 export default function IndexPage({
   searchParams
 }: {
   searchParams: { q: string };
 }) {
-  const result = [{
-    idx: 0,
-    environment: 'dev',
-    accountId: '123456789012',
-    selectRole: 'Administrator',
-    roles: ['Administrator','Developers'],
-  }];
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>('Select Profile');
   const handleSelectEnvironment = (environment: string): void => {
     setSelectedEnvironment(environment);
   };
-  const [profiles, setProfiles] = useState([...result]); // result 초기값으로 profiles 상태를 설정
-  const addProfileToResult = (newProfile: Profile) => {
-    setProfiles(prevProfiles => [...prevProfiles, {
-      idx: prevProfiles.length + 1,
-      environment: newProfile.environment,
-      accountId: '123456789012',
-      selectRole: 'Administrator',
-      roles: ['Administrator','Developers'],
-    }]);
-  };
+  const [profileList, setProfileList] = useProfile();
+  useEffect(() => {
+    setProfileList([...result])
+  }, []);
 
   const search = searchParams.q ?? '';
-  const filteredResult = profiles.filter(item =>
+  const filteredResult = profileList.filter(item =>
     item.environment.includes(search) || item.accountId.includes(search) || item.selectRole.includes(search)
   );
   const searchProfiles = filteredResult as ProfileList[];
@@ -65,7 +55,7 @@ export default function IndexPage({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                {profiles.map((profile) => (
+                {profileList.map((profile) => (
                   <DropdownMenuItem key={profile.idx} onClick={() => handleSelectEnvironment(profile.environment)}>
                     {profile.environment}
                   </DropdownMenuItem>
@@ -79,9 +69,9 @@ export default function IndexPage({
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
           <div className="border shadow-sm rounded-lg p-2">
-            <UsersTable profiles={searchProfiles} />
+            <UsersTable />
           </div>
-          <AddProfile onAddProfile={addProfileToResult} />
+          <AddProfile />
         </main>
       </div>
     </Suspense>

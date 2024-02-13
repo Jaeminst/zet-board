@@ -1,23 +1,21 @@
 'use client';
+import { useProfile } from '@/components/ProfileContext';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowDownIcon, FileEditIcon, TrashIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-interface ProfileList {
-  idx: number;
-  environment: string;
-  accountId: string;
-  selectRole: string;
-  roles: [string];
-}
-
-export default function UsersTable({ profiles }: { profiles: ProfileList[] }) {
+export default function UsersTable() {
+  const [profileList, setProfileList] = useProfile();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 
   const handleSelectRole = (idx: number, role: string): void => {
     setSelectedRoles(prev => ({ ...prev, [idx]: role }));
+  };
+
+  const handleDeleteProfile = (idx: number) => {
+    setProfileList(profileList.filter(profile => profile.idx !== idx));
   };
 
   return (
@@ -31,7 +29,7 @@ export default function UsersTable({ profiles }: { profiles: ProfileList[] }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {profiles.map((profile) => (
+        {profileList.map((profile) => (
           <TableRow key={profile.idx}>
             <TableCell>{profile.environment}</TableCell>
             <TableCell>{profile.accountId}</TableCell>
@@ -55,7 +53,7 @@ export default function UsersTable({ profiles }: { profiles: ProfileList[] }) {
                 <FileEditIcon className="w-4 h-4" />
                 <span className="sr-only">Edit</span>
               </Button>
-              <Button size="icon" variant="ghost">
+              <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
                 <TrashIcon className="w-4 h-4" />
                 <span className="sr-only">Delete</span>
               </Button>
