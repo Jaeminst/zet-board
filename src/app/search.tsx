@@ -1,7 +1,5 @@
 'use client';
-
 import { Input } from '@/components/ui/input';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 import { SearchIcon } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTransition } from 'react';

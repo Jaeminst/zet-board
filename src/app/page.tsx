@@ -1,15 +1,16 @@
-import Search from './search';
-import UsersTable from './table';
 import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusIcon } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import Search from './search';
+import UsersTable from './table';
+import { AddProfile } from './add-profile';
 
 interface Profile {
   idx: number;
   environment: string;
   accountId: string;
-  role: string;
+  selectRole: string;
+  roles: [string];
 }
 
 export default async function IndexPage({
@@ -22,10 +23,11 @@ export default async function IndexPage({
     idx: 0,
     environment: 'dev',
     accountId: '123456789012',
-    role: 'Administrator',
+    selectRole: 'Administrator',
+    roles: ['Administrator','Developers'],
   }];
   const filteredResult = result.filter(item =>
-    item.environment.includes(search) || item.accountId.includes(search) || item.role.includes(search)
+    item.environment.includes(search) || item.accountId.includes(search) || item.selectRole.includes(search)
   );
   const profiles = filteredResult as Profile[];
 
@@ -37,7 +39,7 @@ export default async function IndexPage({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-expanded="true" variant="ghost">
-                  Dev
+                  Select Profile
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
@@ -56,10 +58,7 @@ export default async function IndexPage({
           <div className="border shadow-sm rounded-lg p-2">
             <UsersTable profiles={profiles} />
           </div>
-          <Button className="mt-4 ml-auto w-9/10">
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Profile
-          </Button>
+          <AddProfile />
         </main>
       </div>
     </Suspense>
