@@ -6,7 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ArrowDownIcon, FileEditIcon, TrashIcon } from 'lucide-react';
 import { useState } from 'react';
 
-export default function UsersTable() {
+interface ProfileList {
+  idx: number;
+  environment: string;
+  accountId: string;
+  selectRole: string;
+  roles: string[];
+}
+
+export default function UsersTable({ profiles }: { profiles: ProfileList[] }) {
   const [profileList, setProfileList] = useProfile();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 
@@ -29,7 +37,7 @@ export default function UsersTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {profileList.map((profile) => (
+        {profiles.map((profile) => (
           <TableRow key={profile.idx}>
             <TableCell>{profile.environment}</TableCell>
             <TableCell>{profile.accountId}</TableCell>
