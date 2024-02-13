@@ -1,4 +1,5 @@
-import { Suspense } from 'react';
+'use client';
+import { Suspense, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Search from './search';
@@ -13,12 +14,12 @@ interface Profile {
   roles: [string];
 }
 
-export default async function IndexPage({
+export default function IndexPage({
   searchParams
 }: {
   searchParams: { q: string };
 }) {
-  const search = searchParams.q ?? '';
+  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('Select Profile');
   const result = [{
     idx: 0,
     environment: 'dev',
@@ -26,10 +27,15 @@ export default async function IndexPage({
     selectRole: 'Administrator',
     roles: ['Administrator','Developers'],
   }];
+  const search = searchParams.q ?? '';
   const filteredResult = result.filter(item =>
     item.environment.includes(search) || item.accountId.includes(search) || item.selectRole.includes(search)
   );
   const profiles = filteredResult as Profile[];
+
+  const handleSelectEnvironment = (environment: string): void => {
+    setSelectedEnvironment(environment);
+  };
 
   return (
     <Suspense>
@@ -39,14 +45,15 @@ export default async function IndexPage({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-expanded="true" variant="ghost">
-                  Select Profile
+                  {selectedEnvironment}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem>Dev</DropdownMenuItem>
-                <DropdownMenuItem>QA</DropdownMenuItem>
-                <DropdownMenuItem>Stage</DropdownMenuItem>
-                <DropdownMenuItem>Prod</DropdownMenuItem>
+                {profiles.map((profile) => (
+                  <DropdownMenuItem key={profile.idx} onClick={() => handleSelectEnvironment(profile.environment)}>
+                    {profile.environment}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
