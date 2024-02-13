@@ -1,5 +1,5 @@
 'use client';
-import { useProfile } from '@/components/ProfileContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,7 +14,7 @@ interface ProfileList {
   roles: string[];
 }
 
-export default function UsersTable({ profiles }: { profiles: ProfileList[] }) {
+export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) {
   const [profileList, setProfileList] = useProfile();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 

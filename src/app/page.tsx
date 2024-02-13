@@ -2,10 +2,10 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import Search from './search';
-import UsersTable from './table';
+import Search from '@/components/component/search';
+import ProfileTable from './table';
 import { AddProfile } from './add-profile';
-import { useProfile } from '@/components/ProfileContext';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface ProfileList {
   idx: number;
@@ -20,7 +20,7 @@ const result = [{
   environment: 'dev',
   accountId: '123456789012',
   selectRole: 'Administrator',
-  roles: ['Administrator','Developers'],
+  roles: ['Administrator', 'Developers'],
 }];
 
 export default function IndexPage({
@@ -69,7 +69,7 @@ export default function IndexPage({
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
           <div className="border shadow-sm rounded-lg p-2">
-            <UsersTable profiles={searchProfiles} />
+            <ProfileTable profiles={searchProfiles} />
           </div>
           <AddProfile />
         </main>

@@ -3,7 +3,7 @@ import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog, Dialo
 import { Input } from "@/components/ui/input"
 import { PlusIcon } from "lucide-react"
 import { useState } from "react";
-import { useProfile } from '@/components/ProfileContext';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface Profile {
   environment: string;
