@@ -49,7 +49,7 @@ export function EditProfile({ idx, profile }: EditProfileProps) {
       </DialogTrigger>
       <DialogContent className="w-3/4 md:w-1/2 lg:w-1/3">
         <DialogHeader>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add Profile</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Profile</h3>
         </DialogHeader>
         <div className="p-6 space-y-6">
           <div className="flex flex-col">
