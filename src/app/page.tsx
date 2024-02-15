@@ -1,41 +1,27 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import Search from '@/components/component/search';
+import { Suspense, useEffect } from 'react';
+import Search from '@/components/search';
 import ProfileTable from './table';
 import { AddProfile } from './add-profile';
 import { useProfile } from '@/contexts/ProfileContext';
+import { ProfileMenu } from '@/components/profileMenu';
 
 interface ProfileList {
   idx: number;
   environment: string;
+  accessKey: string;
+  secretKey: string;
   accountId: string;
   selectRole: string;
   roles: string[];
 }
-
-const result = [{
-  idx: 0,
-  environment: 'dev',
-  accountId: '123456789012',
-  selectRole: 'Administrator',
-  roles: ['Administrator', 'Developers'],
-}];
 
 export default function IndexPage({
   searchParams
 }: {
   searchParams: { q: string };
 }) {
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('Select Profile');
-  const handleSelectEnvironment = (environment: string): void => {
-    setSelectedEnvironment(environment);
-  };
-  const [profileList, setProfileList] = useProfile();
-  useEffect(() => {
-    setProfileList([...result])
-  }, [setProfileList]);
+  const [profileList] = useProfile();
 
   const search = searchParams.q ?? '';
   const filteredResult = profileList.filter(item =>
@@ -47,22 +33,7 @@ export default function IndexPage({
     <Suspense>
       <div className="flex flex-col w-full">
         <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">
-          <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button aria-expanded="true" variant="ghost">
-                  {selectedEnvironment}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {profileList.map((profile) => (
-                  <DropdownMenuItem key={profile.idx} onClick={() => handleSelectEnvironment(profile.environment)}>
-                    {profile.environment}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <ProfileMenu />
           <form className="ml-auto flex-1 sm:flex-initial">
             <Search />
           </form>

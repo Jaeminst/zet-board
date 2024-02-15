@@ -3,12 +3,15 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowDownIcon, FileEditIcon, TrashIcon } from 'lucide-react';
+import { TrashIcon } from 'lucide-react';
 import { useState } from 'react';
+import { EditProfile } from './edit-profile';
 
 interface ProfileList {
   idx: number;
   environment: string;
+  accessKey: string;
+  secretKey: string;
   accountId: string;
   selectRole: string;
   roles: string[];
@@ -32,8 +35,8 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
         <TableRow>
           <TableHead className="w-1/4">Environment</TableHead>
           <TableHead className="w-1/4">AWS Account ID</TableHead>
-          <TableHead className="w-1/4">Role</TableHead>
-          <TableHead className="w-1/4 text-right">Actions</TableHead>
+          <TableHead className="w-1/4 pl-8" >Role</TableHead>
+          <TableHead className="w-1/6 pr-8 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -46,7 +49,6 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
                 <DropdownMenuTrigger asChild>
                   <Button aria-expanded="true" variant="ghost">
                     {selectedRoles[profile.idx] || profile.selectRole || "Select Role"}
-                    <ArrowDownIcon className="w-4 h-4 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -57,10 +59,7 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
               </DropdownMenu>
             </TableCell>
             <TableCell className="text-right">
-              <Button size="icon" variant="ghost">
-                <FileEditIcon className="w-4 h-4" />
-                <span className="sr-only">Edit</span>
-              </Button>
+              <EditProfile idx={profile.idx} profile={profile} />
               <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
                 <TrashIcon className="w-4 h-4" />
                 <span className="sr-only">Delete</span>

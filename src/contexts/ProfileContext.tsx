@@ -8,11 +8,20 @@ interface Profile {
   selectRole: string;
   roles: string[];
 }
+const result = [{
+  idx: 0,
+  environment: 'dev',
+  accessKey: 'test',
+  secretKey: 'test',
+  accountId: '123456789012',
+  selectRole: 'Administrator',
+  roles: ['Administrator', 'Developers'],
+}];
 
 const ProfileContext = createContext<[Profile[], Dispatch<SetStateAction<Profile[]>>] | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [profileList, setProfileList] = useState<Profile[]>([]);
+  const [profileList, setProfileList] = useState<Profile[]>([...result]);
 
   return (
     <ProfileContext.Provider value={[profileList, setProfileList]}>

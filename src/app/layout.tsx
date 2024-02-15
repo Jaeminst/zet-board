@@ -1,8 +1,9 @@
-import { Navbar } from '@/components/Navbar';
+import { Navbar } from '@/components/navbar';
 import './globals.css';
 // import Toast from './toast';
 import { Suspense } from 'react';
 import { ProfileProvider } from '@/contexts/ProfileContext';
+import { EnvironmentProvider } from '@/contexts/EnvironmentContext';
 
 export const metadata = {
   title: 'Next.js App Router + NextAuth + Tailwind CSS',
@@ -22,7 +23,9 @@ export default function RootLayout({
           <Navbar />
         </Suspense>
         <ProfileProvider>
-          {children}
+          <EnvironmentProvider>
+            {children}
+          </EnvironmentProvider>
         </ProfileProvider>
         {/* <Toast /> */}
       </body>

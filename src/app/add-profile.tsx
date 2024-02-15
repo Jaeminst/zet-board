@@ -22,6 +22,8 @@ export function AddProfile() {
     setProfileList(prevProfiles => [...prevProfiles, {
       idx: prevProfiles.length + 1,
       environment: newProfile.environment,
+      accessKey: newProfile.accessKey,
+      secretKey: newProfile.secretKey,
       accountId: '123456789012',
       selectRole: 'Administrator',
       roles: ['Administrator','Developers'],
