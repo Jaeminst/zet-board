@@ -1,3 +1,4 @@
+'use client';
 import { Button } from "@/components/ui/button"
 import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"

@@ -1,3 +1,4 @@
+'use client';
 export function IsLoading() {
   return (
     <div className="flex flex-col items-center justify-center w-full min-h-screen space-y-4 text-center">
