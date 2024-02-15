@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TrashIcon } from 'lucide-react';
 import { useState } from 'react';
 import { EditProfile } from './edit-profile';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 interface ProfileList {
   idx: number;
@@ -19,6 +20,7 @@ interface ProfileList {
 
 export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) {
   const [profileList, setProfileList] = useProfile();
+  const [selectedEnvironment, setSelectedEnvironment] = useEnvironment();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 
   const handleSelectRole = (idx: number, role: string): void => {
@@ -26,6 +28,10 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
   };
 
   const handleDeleteProfile = (idx: number) => {
+    const profileToDelete = profileList.find(profile => profile.idx === idx);
+    if (profileToDelete && profileToDelete.environment === selectedEnvironment) {
+      setSelectedEnvironment('Select Profile');
+    };
     setProfileList(profileList.filter(profile => profile.idx !== idx));
   };
 
