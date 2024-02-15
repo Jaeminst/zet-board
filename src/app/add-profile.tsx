@@ -21,7 +21,7 @@ export function AddProfile() {
   };
   const addProfileToResult = (newProfile: Profile) => {
     setProfileList(prevProfiles => [...prevProfiles, {
-      idx: prevProfiles.length + 1,
+      idx: prevProfiles.length,
       environment: newProfile.environment,
       accessKey: newProfile.accessKey,
       secretKey: newProfile.secretKey,

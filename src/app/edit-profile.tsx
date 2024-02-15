@@ -19,14 +19,15 @@ interface EditProfileProps {
 
 export function EditProfile({ idx, profile }: EditProfileProps) {
   const [profileList, setProfileList] = useProfile();
-  const [profileData, setProfileData] = useState({ environment: profile.environment, accessKey: profile.accessKey, secretKey: profile.secretKey });
+  const [index, setIndex] = useState<string>(idx.toString());
+  const [profileData, setProfileData] = useState<Profile>({ environment: profile.environment, accessKey: profile.accessKey, secretKey: profile.secretKey });
   const handleSubmit = () => {
     addProfileToResult(profileData);
   };
 
   const addProfileToResult = (editProfileData: Profile) => {
     const updatedProfileData = {
-      idx: idx,
+      idx: parseInt(index),
       environment: editProfileData.environment,
       accessKey: editProfileData.accessKey,
       secretKey: editProfileData.secretKey,
@@ -53,6 +54,17 @@ export function EditProfile({ idx, profile }: EditProfileProps) {
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Profile</h3>
         </DialogHeader>
         <div className="p-6 space-y-6">
+          <div className="flex flex-col">
+            <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="index">
+              List Number
+            </label>
+            <Input
+              id="index"
+              placeholder="Enter your index"
+              value={index}
+              onChange={(e) => setIndex(e.target.value)}
+            />
+          </div>
           <div className="flex flex-col">
             <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="profile">
               Profile

@@ -46,7 +46,7 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
         </TableRow>
       </TableHeader>
       <TableBody>
-        {profiles.map((profile) => (
+        {[...profiles].sort((a, b) => a.idx - b.idx).map((profile) => (
           <TableRow key={profile.idx}>
             <TableCell>{profile.environment}</TableCell>
             <TableCell>{profile.accountId}</TableCell>

@@ -20,7 +20,7 @@ export function ProfileMenu() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          {profileList.map((profile) => (
+          {[...profileList].sort((a, b) => a.idx - b.idx).map((profile) => (
             <DropdownMenuItem key={profile.idx} onClick={() => handleSelectEnvironment(profile.environment)}>
               {profile.environment}
             </DropdownMenuItem>
