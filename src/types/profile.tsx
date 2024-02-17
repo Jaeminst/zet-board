@@ -4,6 +4,10 @@ interface ProfileData {
   secretKey: string;
 }
 
+interface EditProfileData extends ProfileData {
+  idx: number;
+}
+
 interface Profile extends ProfileData {
   idx: number;
   accountId: string;

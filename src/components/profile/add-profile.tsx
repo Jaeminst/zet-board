@@ -3,16 +3,17 @@ import { Button } from "@/components/ui/button"
 import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { PlusIcon } from "lucide-react"
-import { useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
+import { useForm } from 'react-hook-form'
 
 export function AddProfile() {
+  const { register, handleSubmit } = useForm<ProfileData>();
   const [profileList, setProfileList] = useProfile();
-  const [profileData, setProfileData] = useState<ProfileData>({ environment: '', accessKey: '', secretKey: '' });
-  const handleSubmit = () => {
-    addProfileToResult(profileData);
-    setProfileData({ environment: '', accessKey: '', secretKey: '' });
+
+  const onSubmit = (data: ProfileData) => {
+    addProfileToResult(data);
   };
+
   const addProfileToResult = (newProfile: ProfileData) => {
     setProfileList(prevProfiles => [...prevProfiles, {
       idx: prevProfiles.length,
@@ -37,46 +38,45 @@ export function AddProfile() {
         <DialogHeader>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add Profile</h3>
         </DialogHeader>
-        <div className="p-6 space-y-6">
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="profile">
-              Profile
-            </label>
-            <Input
-              id="profile"
-              placeholder="Enter your profile"
-              value={profileData.environment}
-              onChange={(e) => setProfileData({ ...profileData, environment: e.target.value })}
-            />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="p-6 space-y-6">
+            <div className="flex flex-col">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="environment">
+                Profile
+              </label>
+              <Input
+                id="environment"
+                placeholder="Enter your profile"
+                {...register('environment')}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="accessKey">
+                Access Key
+              </label>
+              <Input
+                id="accessKey"
+                placeholder="Enter your access key"
+                {...register('accessKey')}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="secretKey">
+                Secret Key
+              </label>
+              <Input
+                id="secretKey"
+                placeholder="Enter your secret key"
+                {...register('secretKey')}
+              />
+            </div>
           </div>
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="access-key">
-              Access Key
-            </label>
-            <Input
-              id="access-key"
-              placeholder="Enter your access key"
-              value={profileData.accessKey}
-              onChange={(e) => setProfileData({ ...profileData, accessKey: e.target.value })}
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="secret-key">
-              Secret Key
-            </label>
-            <Input
-              id="secret-key"
-              placeholder="Enter your secret key"
-              value={profileData.secretKey}
-              onChange={(e) => setProfileData({ ...profileData, secretKey: e.target.value })}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="submit" className="ml-auto" onClick={handleSubmit}>Enter</Button>
-          </DialogClose>
-        </DialogFooter>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="submit" className="ml-auto">Enter</Button>
+            </DialogClose>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )
