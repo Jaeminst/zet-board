@@ -1,13 +1,6 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext } from 'react';
 
-interface Profile {
-  idx: number;
-  environment: string;
-  accountId: string;
-  selectRole: string;
-  roles: string[];
-}
 const result = [{
   idx: 0,
   environment: 'dev',
