@@ -1,12 +1,24 @@
 'use client';
+import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ProfileCombo } from "@/components/profile/profile-combo";
+import Search from "@/components/search";
+
 export function IsLoading() {
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-screen space-y-4 text-center">
-      <div className="flex items-center justify-center space-x-3">
-        <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700 animate-ping-1" />
-        <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700 animate-ping-2" />
-        <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700 animate-ping-3" />
-      </div>
+    <div className="flex flex-col w-full">
+      <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">
+        <ProfileCombo />
+        <Search />
+      </header>
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
+        <Table className="border shadow-sm rounded-lg p-2">
+          <TableHeader>
+            <TableRow>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+        </Table>
+      </main>
     </div>
   )
 }

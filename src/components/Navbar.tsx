@@ -1,3 +1,4 @@
+'use client';
 import { DatabaseIcon, Package2Icon, SettingsIcon, UserIcon } from "lucide-react"
 import Link from "next/link"
 
