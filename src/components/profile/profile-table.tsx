@@ -8,17 +8,7 @@ import { useState } from 'react';
 import { EditProfile } from './edit-profile';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
 
-interface ProfileList {
-  idx: number;
-  environment: string;
-  accessKey: string;
-  secretKey: string;
-  accountId: string;
-  selectRole: string;
-  roles: string[];
-}
-
-export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) {
+export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const [profileList, setProfileList] = useProfile();
   const [selectedEnvironment, setSelectedEnvironment] = useEnvironment();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
@@ -36,20 +26,19 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
   };
 
   return (
-    <Table>
+    <Table className="border shadow-sm rounded-lg p-2">
       <TableHeader>
         <TableRow>
-          <TableHead className="w-1/4">Environment</TableHead>
-          <TableHead className="w-1/4">AWS Account ID</TableHead>
-          <TableHead className="w-1/4 pl-8" >Role</TableHead>
-          <TableHead className="w-1/6 pr-8 text-right">Actions</TableHead>
+          <TableHead className="w-40">Environment</TableHead>
+          <TableHead className="w-64 pl-8" >Role</TableHead>
+          <TableHead className="w-64">Account ID</TableHead>
+          <TableHead className="w-1 text-center">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {[...profiles].sort((a, b) => a.idx - b.idx).map((profile) => (
           <TableRow key={profile.idx}>
             <TableCell>{profile.environment}</TableCell>
-            <TableCell>{profile.accountId}</TableCell>
             <TableCell>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -64,7 +53,8 @@ export default function ProfileTable({ profiles }: { profiles: ProfileList[] }) 
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>
-            <TableCell className="text-right">
+            <TableCell>{profile.accountId}</TableCell>
+            <TableCell className="flex flex-row justify-center">
               <EditProfile idx={profile.idx} profile={profile} />
               <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
                 <TrashIcon className="w-4 h-4" />

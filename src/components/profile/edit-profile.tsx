@@ -6,26 +6,15 @@ import { FileEditIcon } from "lucide-react"
 import { useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 
-interface Profile {
-  environment: string;
-  accessKey: string;
-  secretKey: string;
-}
-
-interface EditProfileProps {
-  idx: number;
-  profile: Profile;
-}
-
 export function EditProfile({ idx, profile }: EditProfileProps) {
   const [profileList, setProfileList] = useProfile();
   const [index, setIndex] = useState<string>(idx.toString());
-  const [profileData, setProfileData] = useState<Profile>({ environment: profile.environment, accessKey: profile.accessKey, secretKey: profile.secretKey });
+  const [profileData, setProfileData] = useState<ProfileData>({ environment: profile.environment, accessKey: profile.accessKey, secretKey: profile.secretKey });
   const handleSubmit = () => {
-    addProfileToResult(profileData);
+    editProfileToResult(profileData);
   };
 
-  const addProfileToResult = (editProfileData: Profile) => {
+  const editProfileToResult = (editProfileData: ProfileData) => {
     const updatedProfileData = {
       idx: parseInt(index),
       environment: editProfileData.environment,

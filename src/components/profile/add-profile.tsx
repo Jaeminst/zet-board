@@ -6,20 +6,14 @@ import { PlusIcon } from "lucide-react"
 import { useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 
-interface Profile {
-  environment: string;
-  accessKey: string;
-  secretKey: string;
-}
-
 export function AddProfile() {
   const [profileList, setProfileList] = useProfile();
-  const [profileData, setProfileData] = useState({ environment: '', accessKey: '', secretKey: '' });
+  const [profileData, setProfileData] = useState<ProfileData>({ environment: '', accessKey: '', secretKey: '' });
   const handleSubmit = () => {
     addProfileToResult(profileData);
     setProfileData({ environment: '', accessKey: '', secretKey: '' });
   };
-  const addProfileToResult = (newProfile: Profile) => {
+  const addProfileToResult = (newProfile: ProfileData) => {
     setProfileList(prevProfiles => [...prevProfiles, {
       idx: prevProfiles.length,
       environment: newProfile.environment,
