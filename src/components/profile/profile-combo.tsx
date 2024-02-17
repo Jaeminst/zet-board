@@ -23,6 +23,7 @@ export function ProfileCombo() {
   const [selectedEnvironment, setSelectedEnvironment] = useEnvironment();
   const handleSelectEnvironment = (environment: string): void => {
     setSelectedEnvironment(environment);
+    localStorage.setItem('selectedEnvironment', environment);
   };
 
   return (
