@@ -1,6 +1,6 @@
 'use client';
 import { ProfileCombo } from '@/components/profile/profile-combo';
-import Search from '@/components/search';
+import Search from '@/components/Search';
 import DatabaseTable from '@/components/database/database-table';
 import { useDatabase } from '@/contexts/DatabaseContext';
 
@@ -21,7 +21,7 @@ export default function DatabasePage({
     item.engine.includes(search) ||
     item.size.includes(search)
   );
-  const searchDatabases = filteredResult as Database[];
+  const searchDatabases = filteredResult as DatabaseList[];
   return (
     <div className="flex flex-col w-full">
       <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">

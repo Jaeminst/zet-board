@@ -7,9 +7,13 @@ interface DatabaseData {
   size: string;
 }
 
-interface Database extends DatabaseData {
+interface DatabaseSetting {
+  alias: string,
+  localport: string;
+  identifier: string;
+}
+
+interface DatabaseList extends DatabaseSetting, DatabaseData {
   idx: number;
   tunneling: boolean;
-  localport: string;
-  alias: string,
 }
