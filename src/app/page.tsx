@@ -1,6 +1,6 @@
 'use client';
 import { Suspense, useEffect } from 'react';
-import Search from '@/components/search';
+import Search from '@/components/Search';
 import ProfileTable from '@/components/profile/profile-table';
 import { AddProfile } from '@/components/profile/add-profile';
 import { useProfile } from '@/contexts/ProfileContext';

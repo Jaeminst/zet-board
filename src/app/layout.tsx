@@ -1,7 +1,7 @@
 'use client';
-import { Navbar } from '@/components/navbar';
+import { Navbar } from '@/components/Navbar';
 import './globals.css';
-// import Toast from './toast';
+import { Toaster } from "@/components/ui/sonner"
 import { ProfileProvider } from '@/contexts/ProfileContext';
 import { EnvironmentProvider } from '@/contexts/EnvironmentContext';
 
@@ -19,7 +19,7 @@ export default function RootLayout({
             {children}
           </EnvironmentProvider>
         </ProfileProvider>
-        {/* <Toast /> */}
+        <Toaster />
       </body>
     </html>
   );

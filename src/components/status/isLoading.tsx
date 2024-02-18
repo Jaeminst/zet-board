@@ -1,7 +1,7 @@
 'use client';
 import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ProfileCombo } from "@/components/profile/profile-combo";
-import Search from "@/components/search";
+import Search from "@/components/Search";
 
 export function IsLoading() {
   return (
