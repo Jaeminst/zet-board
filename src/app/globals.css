@@ -65,7 +65,19 @@
     --ring: 212.7 26.8% 83.9%;
   }
 }
- 
+
+@layer utilities {
+  .border-border {
+    border-color: hsl(var(--border));
+  }
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
