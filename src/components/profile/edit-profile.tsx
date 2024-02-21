@@ -5,12 +5,21 @@ import { Input } from "@/components/ui/input"
 import { FileEditIcon } from "lucide-react"
 import { useProfile } from '@/contexts/ProfileContext';
 import { useForm } from 'react-hook-form'
+import { useEffect, useState } from "react";
 
 export function EditProfile({ idx, profile }: EditProfileProps) {
-  const { register, handleSubmit } = useForm<EditProfileData>();
+  const [open, setOpen] = useState(false);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<EditProfileData>();
   const [profileList, setProfileList] = useProfile();
 
+  useEffect(() => {
+    if (!open) {
+      reset();
+    }
+  }, [open, reset]);
+
   const onSubmit = (data: EditProfileData) => {
+    setOpen(false);
     editProfileToResult(data);
   };
 
@@ -31,7 +40,7 @@ export function EditProfile({ idx, profile }: EditProfileProps) {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="icon" variant="ghost">
           <FileEditIcon className="w-4 h-4" />
@@ -42,57 +51,67 @@ export function EditProfile({ idx, profile }: EditProfileProps) {
         <DialogHeader>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Profile</h3>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="p-6 space-y-6">
             <div className="flex flex-col">
               <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="index">
                 List Number
+                <span className="text-red-600">{errors.idx?.message}</span>
               </label>
               <Input
                 id="index"
                 placeholder="Enter your index"
                 defaultValue={idx.toString()}
-                {...register('idx')}
+                {...register('idx',{
+                  required: ' is required.',
+                })}
               />
             </div>
             <div className="flex flex-col">
               <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="environment">
                 Profile
+                <span className="text-red-600">{errors.environment?.message}</span>
               </label>
               <Input
                 id="environment"
                 placeholder="Enter your profile"
                 defaultValue={profile.environment}
-                {...register('environment')}
+                {...register('environment',{
+                  required: ' is required.',
+                })}
               />
             </div>
             <div className="flex flex-col">
               <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="accessKey">
                 Access Key
+                <span className="text-red-600">{errors.accessKey?.message}</span>
               </label>
               <Input
                 id="accessKey"
                 placeholder="Enter your access key"
                 defaultValue={profile.accessKey}
-                {...register('accessKey')}
+                {...register('accessKey',{
+                  required: ' is required.',
+                })}
               />
             </div>
             <div className="flex flex-col">
               <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="secretKey">
                 Secret Key
+                <span className="text-red-600">{errors.secretKey?.message}</span>
               </label>
               <Input
                 id="secretKey"
                 placeholder="Enter your secret key"
                 defaultValue={profile.secretKey}
-                {...register('secretKey')}
+                {...register('secretKey',{
+                  required: ' is required.',
+                })}
               />
             </div>
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="submit" className="ml-auto">Enter</Button>
-            </DialogClose>
+            <Button type="submit" className="ml-auto">Enter</Button>
           </DialogFooter>
         </form>
       </DialogContent>

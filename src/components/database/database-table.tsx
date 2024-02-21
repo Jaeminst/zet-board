@@ -7,10 +7,17 @@ import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { toast } from 'sonner';
+import { useEffect } from 'react';
+import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
 
 export default function DatabaseTable({ databases }: { databases: DatabaseList[] }) {
   const [databaseList, setDatabaseList] = useDatabase();
+  const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
   const [selectedEnvironment] = useEnvironment();
+
+  useEffect(() => {
+    setDatabaseSearchList(databaseList);
+  }, [databaseList, setDatabaseSearchList]);
 
   const updateDatabaseField = (idx: number, field: keyof DatabaseSetting, value: string) => {
     const updatedList = databaseList.map((database) => {
@@ -33,6 +40,7 @@ export default function DatabaseTable({ databases }: { databases: DatabaseList[]
     });
     setDatabaseList(updatedList);
     localStorage.setItem(`databaseList_${selectedEnvironment}`, JSON.stringify(updatedList));
+    localStorage.setItem(`databaseSetting_${selectedEnvironment}`, JSON.stringify(updatedList));
   };
 
   const copyToClipboard = async (text: string) => {

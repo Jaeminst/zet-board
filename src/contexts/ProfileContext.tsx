@@ -1,5 +1,5 @@
 'use client';
-import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext } from 'react';
+import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
 
 const result = [{
   idx: 0,
@@ -15,6 +15,14 @@ const ProfileContext = createContext<[Profile[], Dispatch<SetStateAction<Profile
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profileList, setProfileList] = useState<Profile[]>([...result]);
+  useEffect(() => {
+    // calling IPC exposed from preload script
+    window.electron.ipcRenderer.once('ipc-example', (arg: string) => {
+      // eslint-disable-next-line no-console
+      console.log(arg);
+    });
+    window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);
+  }, []);
 
   return (
     <ProfileContext.Provider value={[profileList, setProfileList]}>

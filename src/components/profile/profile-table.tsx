@@ -23,6 +23,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
       setSelectedEnvironment('Select Profile');
     };
     setProfileList(profileList.filter(profile => profile.idx !== idx));
+    console.log(profileList)
   };
 
   return (

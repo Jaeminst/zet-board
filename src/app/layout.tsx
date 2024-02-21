@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/sonner"
 import { ProfileProvider } from '@/contexts/ProfileContext';
 import { EnvironmentProvider } from '@/contexts/EnvironmentContext';
+import { ProfileSearchProvider } from '@/contexts/ProfileSearchContext';
 
 export default function RootLayout({
   children
@@ -15,9 +16,11 @@ export default function RootLayout({
       <body className="flex min-h-screen w-full">
         <Navbar />
         <ProfileProvider>
-          <EnvironmentProvider>
-            {children}
-          </EnvironmentProvider>
+          <ProfileSearchProvider>
+            <EnvironmentProvider>
+              {children}
+            </EnvironmentProvider>
+          </ProfileSearchProvider>
         </ProfileProvider>
         <Toaster />
       </body>
