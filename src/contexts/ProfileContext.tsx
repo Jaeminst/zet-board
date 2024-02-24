@@ -3,7 +3,7 @@ import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContex
 
 const result = [{
   idx: 0,
-  environment: 'dev',
+  profileName: 'dev',
   accessKey: 'test',
   secretKey: 'test',
   accountId: '123456789012',
@@ -18,7 +18,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // calling IPC exposed from preload script
     window.electron.ipcRenderer.once('ipc-example', (arg: string) => {
-      // eslint-disable-next-line no-console
       console.log(arg);
     });
     window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);

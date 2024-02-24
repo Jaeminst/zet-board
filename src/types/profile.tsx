@@ -1,5 +1,5 @@
 interface ProfileData {
-  environment: string;
+  profileName: string;
   accessKey: string;
   secretKey: string;
 }

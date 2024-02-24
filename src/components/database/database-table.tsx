@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import EditableField from '@/components/EditableField';
 import { useDatabase } from '@/contexts/DatabaseContext';
-import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { toast } from 'sonner';
@@ -13,7 +13,7 @@ import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
 export default function DatabaseTable({ databases }: { databases: DatabaseList[] }) {
   const [databaseList, setDatabaseList] = useDatabase();
   const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
-  const [selectedEnvironment] = useEnvironment();
+  const [profileSession] = useProfileSession();
 
   useEffect(() => {
     setDatabaseSearchList(databaseList);
@@ -27,8 +27,8 @@ export default function DatabaseTable({ databases }: { databases: DatabaseList[]
       return database;
     });
     setDatabaseList(updatedList);
-    localStorage.setItem(`databaseList_${selectedEnvironment}`, JSON.stringify(updatedList));
-    localStorage.setItem(`databaseSetting_${selectedEnvironment}`, JSON.stringify(updatedList));
+    localStorage.setItem(`databaseList_${profileSession}`, JSON.stringify(updatedList));
+    localStorage.setItem(`databaseSetting_${profileSession}`, JSON.stringify(updatedList));
   };
 
   const toggleSwitch = (idx: number) => {
@@ -39,8 +39,8 @@ export default function DatabaseTable({ databases }: { databases: DatabaseList[]
       return database;
     });
     setDatabaseList(updatedList);
-    localStorage.setItem(`databaseList_${selectedEnvironment}`, JSON.stringify(updatedList));
-    localStorage.setItem(`databaseSetting_${selectedEnvironment}`, JSON.stringify(updatedList));
+    localStorage.setItem(`databaseList_${profileSession}`, JSON.stringify(updatedList));
+    localStorage.setItem(`databaseSetting_${profileSession}`, JSON.stringify(updatedList));
   };
 
   const copyToClipboard = async (text: string) => {

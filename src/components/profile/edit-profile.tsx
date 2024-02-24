@@ -26,7 +26,7 @@ export function EditProfile({ idx, profile }: EditProfileProps) {
   const editProfileToResult = (editProfileData: EditProfileData) => {
     const updatedProfileData = {
       idx: editProfileData.idx,
-      environment: editProfileData.environment,
+      profileName: editProfileData.profileName,
       accessKey: editProfileData.accessKey,
       secretKey: editProfileData.secretKey,
       accountId: '123456789012',
@@ -68,15 +68,15 @@ export function EditProfile({ idx, profile }: EditProfileProps) {
               />
             </div>
             <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="environment">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="profileName">
                 Profile
-                <span className="text-red-600">{errors.environment?.message}</span>
+                <span className="text-red-600">{errors.profileName?.message}</span>
               </label>
               <Input
-                id="environment"
+                id="profileName"
                 placeholder="Enter your profile"
-                defaultValue={profile.environment}
-                {...register('environment',{
+                defaultValue={profile.profileName}
+                {...register('profileName',{
                   required: ' is required.',
                 })}
               />

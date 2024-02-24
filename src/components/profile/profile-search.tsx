@@ -19,7 +19,7 @@ export default function ProfileSearch({ disabled }: { disabled?: boolean }) {
   function handleSearch(value: string) {
     const search = value ?? '';
     const filteredResult = profileList.filter(item =>
-      item.environment.includes(search)
+      item.profileName.includes(search)
       || item.accountId.includes(search)
       || item.selectRole.includes(search)
     );

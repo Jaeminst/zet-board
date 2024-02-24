@@ -6,11 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TrashIcon } from 'lucide-react';
 import { useState } from 'react';
 import { EditProfile } from './edit-profile';
-import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useProfileSession } from '@/contexts/ProfileSessionContext';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const [profileList, setProfileList] = useProfile();
-  const [selectedEnvironment, setSelectedEnvironment] = useEnvironment();
+  const [profileSession, setProfileSession] = useProfileSession();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 
   const handleSelectRole = (idx: number, role: string): void => {
@@ -19,8 +19,8 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
 
   const handleDeleteProfile = (idx: number) => {
     const profileToDelete = profileList.find(profile => profile.idx === idx);
-    if (profileToDelete && profileToDelete.environment === selectedEnvironment) {
-      setSelectedEnvironment('Select Profile');
+    if (profileToDelete && profileToDelete.profileName === profileSession) {
+      setProfileSession('Select Profile');
     };
     setProfileList(profileList.filter(profile => profile.idx !== idx));
     console.log(profileList)
@@ -30,7 +30,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
     <Table className="border shadow-sm rounded-lg p-2">
       <TableHeader>
         <TableRow>
-          <TableHead className="w-40">Environment</TableHead>
+          <TableHead className="w-40">Profile</TableHead>
           <TableHead className="w-64 pl-8" >Role</TableHead>
           <TableHead className="w-64">Account ID</TableHead>
           <TableHead className="w-1 text-center">Actions</TableHead>
@@ -39,7 +39,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
       <TableBody>
         {[...profiles].sort((a, b) => a.idx - b.idx).map((profile) => (
           <TableRow key={profile.idx}>
-            <TableCell>{profile.environment}</TableCell>
+            <TableCell>{profile.profileName}</TableCell>
             <TableCell>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

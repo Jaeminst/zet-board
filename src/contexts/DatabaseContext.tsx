@@ -1,6 +1,6 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
-import { useEnvironment } from './EnvironmentContext';
+import { useProfileSession } from './ProfileSessionContext';
 
 const result: DatabaseList[] = [{
   idx: 0,
@@ -30,15 +30,15 @@ const DatabaseContext = createContext<[DatabaseList[], Dispatch<SetStateAction<D
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [databaseList, setDatabaseList] = useState<DatabaseList[]>([]);
-  const [selectedEnvironment] = useEnvironment();
+  const [profileSession] = useProfileSession();
 
   useEffect(() => {
-    const localStorageDatabaseSetting = localStorage.getItem(`databaseSetting_${selectedEnvironment}`);
-    const localStorageDatabaseList = localStorage.getItem(`databaseList_${selectedEnvironment}`);
+    const localStorageDatabaseSetting = localStorage.getItem(`databaseSetting_${profileSession}`);
+    const localStorageDatabaseList = localStorage.getItem(`databaseList_${profileSession}`);
     const jsonLocalStorageDatabaseSetting = JSON.parse(localStorageDatabaseSetting || '[]')
     const jsonLocalStorageDatabaseList = JSON.parse(localStorageDatabaseList || '[]')
     setDatabaseList(jsonLocalStorageDatabaseList.length > 0 ? jsonLocalStorageDatabaseList : [...result])
-  }, [selectedEnvironment]);
+  }, [profileSession]);
 
   return (
     <DatabaseContext.Provider value={[databaseList, setDatabaseList]}>

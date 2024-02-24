@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import './globals.css';
 import { Toaster } from "@/components/ui/sonner"
 import { ProfileProvider } from '@/contexts/ProfileContext';
-import { EnvironmentProvider } from '@/contexts/EnvironmentContext';
+import { ProfileSessionProvider } from '@/contexts/ProfileSessionContext';
 import { ProfileSearchProvider } from '@/contexts/ProfileSearchContext';
 
 export default function RootLayout({
@@ -17,9 +17,9 @@ export default function RootLayout({
         <Navbar />
         <ProfileProvider>
           <ProfileSearchProvider>
-            <EnvironmentProvider>
+            <ProfileSessionProvider>
               {children}
-            </EnvironmentProvider>
+            </ProfileSessionProvider>
           </ProfileSearchProvider>
         </ProfileProvider>
         <Toaster />

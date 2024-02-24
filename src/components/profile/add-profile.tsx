@@ -32,7 +32,7 @@ export function AddProfile() {
   const addProfileToResult = (newProfile: ProfileData) => {
     setProfileList(prevProfiles => [...prevProfiles, {
       idx: prevProfiles.length,
-      environment: newProfile.environment,
+      profileName: newProfile.profileName,
       accessKey: newProfile.accessKey,
       secretKey: newProfile.secretKey,
       accountId: '123456789012',
@@ -56,15 +56,14 @@ export function AddProfile() {
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="p-6 space-y-6">
             <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="environment">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="profileName">
                 Profile
-                <span className="text-red-600">{errors.environment?.message}</span>
+                <span className="text-red-600">{errors.profileName?.message}</span>
               </label>
               <Input
-                type="text"
-                id="environment"
+                id="profileName"
                 placeholder="Enter your profile"
-                {...register('environment',{
+                {...register('profileName',{
                   required: ' is required.',
                 })}
               />
@@ -75,7 +74,6 @@ export function AddProfile() {
                 <span className="text-red-600">{errors.accessKey?.message}</span>
               </label>
               <Input
-                type="text"
                 id="accessKey"
                 placeholder="Enter your access key"
                 {...register('accessKey',{
@@ -89,7 +87,6 @@ export function AddProfile() {
                 <span className="text-red-600">{errors.secretKey?.message}</span>
               </label>
               <Input
-                type="text"
                 id="secretKey"
                 placeholder="Enter your secret key"
                 {...register('secretKey',{

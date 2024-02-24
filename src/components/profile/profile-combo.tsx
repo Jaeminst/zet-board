@@ -15,15 +15,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useProfile } from '@/contexts/ProfileContext'
-import { useEnvironment } from '@/contexts/EnvironmentContext'
+import { useProfileSession } from '@/contexts/ProfileSessionContext'
 
 export function ProfileCombo() {
   const [open, setOpen] = useState(false)
   const [profileList] = useProfile();
-  const [selectedEnvironment, setSelectedEnvironment] = useEnvironment();
-  const handleSelectEnvironment = (environment: string): void => {
-    setSelectedEnvironment(environment);
-    localStorage.setItem('selectedEnvironment', environment);
+  const [profileSession, setProfileSession] = useProfileSession();
+  const handleSelectProfileSession = (profileName: string): void => {
+    setProfileSession(profileName);
+    localStorage.setItem('profileSession', profileName);
   };
 
   return (
@@ -35,7 +35,7 @@ export function ProfileCombo() {
           aria-expanded={open}
           className='w-[200px] justify-between'
         >
-          {selectedEnvironment}
+          {profileSession}
           <CaretSortIcon className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
@@ -45,17 +45,17 @@ export function ProfileCombo() {
             {[...profileList].sort((a, b) => a.idx - b.idx).map((profile) => (
               <CommandItem
                 key={profile.idx}
-                value={profile.environment}
+                value={profile.profileName}
                 onSelect={() => {
-                  handleSelectEnvironment(profile.environment)
+                  handleSelectProfileSession(profile.profileName)
                   setOpen(false)
                 }}
               >
-                {profile.environment}
+                {profile.profileName}
                 <CheckIcon
                   className={cn(
                     'ml-auto h-4 w-4',
-                    selectedEnvironment === profile.environment ? 'opacity-100' : 'opacity-0'
+                    profileSession === profile.profileName ? 'opacity-100' : 'opacity-0'
                   )}
                 />
               </CommandItem>
