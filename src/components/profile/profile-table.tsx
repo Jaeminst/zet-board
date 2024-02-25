@@ -1,20 +1,28 @@
 'use client';
-import { useProfile } from '@/contexts/ProfileContext';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrashIcon } from 'lucide-react';
 import { useState } from 'react';
-import { EditProfile } from './edit-profile';
+import { setLocalStorage } from '@/lib/localStorage';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
+import { EditProfile } from './edit-profile';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const [profileList, setProfileList] = useProfile();
   const [profileSession, setProfileSession] = useProfileSession();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 
-  const handleSelectRole = (idx: number, role: string): void => {
-    setSelectedRoles(prev => ({ ...prev, [idx]: role }));
+  const handleSelectRole = (selectProfile: Profile, role: string): void => {
+    setSelectedRoles(prev => ({ ...prev, [selectProfile.idx]: role }));
+    // profileList 상태에서 idx 값이 일치하는 프로필을 찾아 그의 역할을 업데이트합니다.
+    setProfileList(prevProfileList => prevProfileList.map(profile => 
+      profile.idx === selectProfile.idx ? { ...profile, selectRole: role } : profile
+    ));
+    setLocalStorage('profileList', selectProfile.profileName, {
+      selectRole: role,
+    });
   };
 
   const handleDeleteProfile = (idx: number) => {
@@ -47,16 +55,18 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
                     {selectedRoles[profile.idx] || profile.selectRole || "Select Role"}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
+                {profile.roles !== undefined && (
+                  <DropdownMenuContent align="start">
                   {profile.roles.sort((a, b) => a.localeCompare(b)).map((role) => (
-                    <DropdownMenuItem key={role} onClick={() => handleSelectRole(profile.idx, role)}>{role}</DropdownMenuItem>
+                    <DropdownMenuItem key={role} onClick={() => handleSelectRole(profile, role)}>{role}</DropdownMenuItem>
                   ))}
-                </DropdownMenuContent>
+                  </DropdownMenuContent>
+                )}
               </DropdownMenu>
             </TableCell>
             <TableCell>{profile.accountId}</TableCell>
             <TableCell className="flex flex-row justify-center">
-              <EditProfile idx={profile.idx} profile={profile} />
+              {/* <EditProfile idx={profile.idx} profile={profile} /> */}
               <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
                 <TrashIcon className="w-4 h-4" />
                 <span className="sr-only">Delete</span>

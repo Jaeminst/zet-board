@@ -3,6 +3,7 @@ import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import serve from 'electron-serve';
+import { registerIpcProfile } from "./profile";
 
 const isDev = process.env.NODE_ENV === "development";
 const port = 3000;
@@ -101,6 +102,11 @@ const createWindow = () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
+
+  // 메인에서 렌더러로 메세지 보내기
+  // win.webContents.on('did-finish-load', function () {
+  //   // if (win !== null) win.webContents.send('test', 'test')
+  // });
 };
 /**
  * Add event listeners...
@@ -126,8 +132,6 @@ app
   })
   .catch(console.log);
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
+
+// 시작시 프로파일 dev, qa, stage, prod 중 있는것 반환
+registerIpcProfile();

@@ -1,21 +1,44 @@
 interface ProfileData {
-  profileName: string;
-  accessKey: string;
-  secretKey: string;
-}
-
-interface EditProfileData extends ProfileData {
   idx: number;
+  accountId: string;
+  selectRole?: string;
+  roles: string[];
 }
 
 interface Profile extends ProfileData {
-  idx: number;
+  profileName: string;
+}
+
+interface ProfileStorage {
+  [key: string]: ProfileData
+}
+
+interface ConfigureProfile {
+  idx?: number;
+  profileName: string;
   accountId: string;
-  selectRole: string;
   roles: string[];
+}
+
+interface EditProfileData {
+  idx?: number;
+  profileName?: string;
+  accountId?: string;
+  selectRole?: string;
+  roles?: string[];
+}
+
+interface ProfileCredentials {
+  profileName: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+}
+
+interface EditProfileCredentials extends ProfileCredentials {
+  idx: number;
 }
 
 interface EditProfileProps {
   idx: number;
-  profile: Profile;
+  profile: EditProfileCredentials;
 }

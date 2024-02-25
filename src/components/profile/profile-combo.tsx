@@ -16,14 +16,22 @@ import {
 } from '@/components/ui/popover'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useProfileSession } from '@/contexts/ProfileSessionContext'
+import { toast } from 'sonner'
 
 export function ProfileCombo() {
   const [open, setOpen] = useState(false)
   const [profileList] = useProfile();
   const [profileSession, setProfileSession] = useProfileSession();
-  const handleSelectProfileSession = (profileName: string): void => {
-    setProfileSession(profileName);
-    localStorage.setItem('profileSession', profileName);
+  const handleSelectProfileSession = (profileName: string, selectRole: string | undefined): void => {
+    if (selectRole) {
+      setProfileSession(profileName);
+      localStorage.setItem('profileSession', profileName);
+    } else {
+      toast(`${profileName} 역할이 선택되지 않았습니다.`, {
+        description: `Select Role: ${selectRole}`,
+        duration: 5000
+      });
+    }
   };
 
   return (
@@ -47,7 +55,7 @@ export function ProfileCombo() {
                 key={profile.idx}
                 value={profile.profileName}
                 onSelect={() => {
-                  handleSelectProfileSession(profile.profileName)
+                  handleSelectProfileSession(profile.profileName, profile.selectRole)
                   setOpen(false)
                 }}
               >

@@ -7,10 +7,12 @@ import { useForm } from 'react-hook-form'
 import { useEffect, useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSearch } from "@/contexts/ProfileSearchContext";
+import { ipcParser } from "@/lib/ipcPaser";
+import { setLocalStorage } from "@/lib/localStorage";
 
 export function AddProfile() {
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileData>();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<EditProfileCredentials>();
   const [profileList, setProfileList] = useProfile();
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
@@ -24,21 +26,33 @@ export function AddProfile() {
     setProfileSearchList(profileList);
   }, [profileList, setProfileSearchList]);
 
-  const onSubmit = (data: ProfileData) => {
+  const onSubmit = (data: ProfileCredentials) => {
     setOpen(false);
     addProfileToResult(data);
   };
 
-  const addProfileToResult = (newProfile: ProfileData) => {
-    setProfileList(prevProfiles => [...prevProfiles, {
-      idx: prevProfiles.length,
-      profileName: newProfile.profileName,
-      accessKey: newProfile.accessKey,
-      secretKey: newProfile.secretKey,
-      accountId: '123456789012',
-      selectRole: 'Administrator',
-      roles: ['Administrator','Developers'],
-    }]);
+  const addProfileToResult = (newProfile: ProfileCredentials) => {
+    const profileName = newProfile.profileName;
+    const accessKeyId = newProfile.accessKeyId;
+    const secretAccessKey = newProfile.secretAccessKey;
+    window.electron.profile.send('add-profile', JSON.stringify({
+      profileName,
+      accessKeyId,
+      secretAccessKey,
+    }));
+    window.electron.profile.on('add-profile', (addProfileString: string) => {
+      const addProfile = ipcParser(addProfileString) as ConfigureProfile;
+      console.log('addProfile', addProfile)
+      const newProfile = {
+        idx: profileList.length, // 현재 profileList의 길이를 사용하여 idx 설정
+        profileName, // 함수 인자나 상태에서 가져온 profileName
+        accountId: addProfile.accountId, // 추가할 프로필에서 가져온 accountId
+        roles: addProfile.roles, // 추가할 프로필에서 가져온 roles
+      };
+      console.log('newProfile', newProfile)
+      setProfileList(prevProfiles => [...prevProfiles, newProfile]);
+      setLocalStorage('profileList', profileName, newProfile);
+    });
   };
 
   return (
@@ -69,27 +83,27 @@ export function AddProfile() {
               />
             </div>
             <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="accessKey">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="accessKeyId">
                 Access Key
-                <span className="text-red-600">{errors.accessKey?.message}</span>
+                <span className="text-red-600">{errors.accessKeyId?.message}</span>
               </label>
               <Input
-                id="accessKey"
+                id="accessKeyId"
                 placeholder="Enter your access key"
-                {...register('accessKey',{
+                {...register('accessKeyId',{
                   required: ' is required.',
                 })}
               />
             </div>
             <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="secretKey">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="secretAccessKey">
                 Secret Key
-                <span className="text-red-600">{errors.secretKey?.message}</span>
+                <span className="text-red-600">{errors.secretAccessKey?.message}</span>
               </label>
               <Input
-                id="secretKey"
+                id="secretAccessKey"
                 placeholder="Enter your secret key"
-                {...register('secretKey',{
+                {...register('secretAccessKey',{
                   required: ' is required.',
                 })}
               />
