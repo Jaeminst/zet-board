@@ -42,16 +42,16 @@ export function AddProfile() {
     }));
     window.electron.profile.on('add-profile', (addProfileString: string) => {
       const addProfile = ipcParser(addProfileString) as ConfigureProfile;
-      console.log('addProfile', addProfile)
-      const newProfile = {
-        idx: profileList.length, // 현재 profileList의 길이를 사용하여 idx 설정
-        profileName, // 함수 인자나 상태에서 가져온 profileName
-        accountId: addProfile.accountId, // 추가할 프로필에서 가져온 accountId
-        roles: addProfile.roles, // 추가할 프로필에서 가져온 roles
+      if (addProfile) {
+        const newProfile = {
+          idx: profileList.length, // 현재 profileList의 길이를 사용하여 idx 설정
+          profileName, // 함수 인자나 상태에서 가져온 profileName
+          accountId: addProfile.accountId, // 추가할 프로필에서 가져온 accountId
+          roles: addProfile.roles, // 추가할 프로필에서 가져온 roles
+        };
+        setProfileList(prevProfiles => [...prevProfiles, newProfile]);
+        setLocalStorage('profileList', profileName, newProfile);
       };
-      console.log('newProfile', newProfile)
-      setProfileList(prevProfiles => [...prevProfiles, newProfile]);
-      setLocalStorage('profileList', profileName, newProfile);
     });
   };
 

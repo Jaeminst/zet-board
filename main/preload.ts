@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type ipcProfile = 'init-profiles' | 'add-profile'
+export type ipcProfile = 'init-profiles' | 'add-profile' | 'delete-profile'
 
 const electronHandler = {
   profile: {

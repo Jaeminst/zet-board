@@ -8,6 +8,7 @@ import { setLocalStorage } from '@/lib/localStorage';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { EditProfile } from './edit-profile';
+import { ipcParser } from '@/lib/ipcPaser';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const [profileList, setProfileList] = useProfile();
@@ -27,11 +28,18 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
 
   const handleDeleteProfile = (idx: number) => {
     const profileToDelete = profileList.find(profile => profile.idx === idx);
-    if (profileToDelete && profileToDelete.profileName === profileSession) {
-      setProfileSession('Select Profile');
-    };
-    setProfileList(profileList.filter(profile => profile.idx !== idx));
-    console.log(profileList)
+    if (profileToDelete) {
+      window.electron.profile.send('delete-profile', profileToDelete.profileName);
+      window.electron.profile.on('delete-profile', (deleteProfileString: string) => {
+        ipcParser(deleteProfileString);
+        setProfileList(profileList.filter(profile => profile.idx !== idx));
+        // newData 인수 없이 setLocalStorage를 호출하여 프로필을 삭제합니다.
+        setLocalStorage('profileList', profileToDelete.profileName);
+      });
+      if (profileToDelete.profileName === profileSession) {
+        setProfileSession('Select Profile');
+      }
+    }
   };
 
   return (

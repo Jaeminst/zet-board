@@ -12,16 +12,21 @@ export function getLocalStorage(item: string, index?: string) {
   return null;
 }
 
-export function setLocalStorage(item: string, index: string, newData: EditProfileData) {
+export function setLocalStorage(item: string, index: string, newData?: EditProfileData) {
   // localStorage에서 전체 item (예: 'profileList')을 가져옵니다.
   const data = localStorage.getItem(item);
   if (data) {
     // 데이터가 존재하면, JSON으로 파싱합니다.
     const parsedData: ProfileStorage = JSON.parse(data);
 
-    // 특정 인덱스(예: 'dev')에 대한 데이터를 업데이트합니다.
-    // 여기서는 기존 데이터를 유지하면서 새 데이터로 오버라이드합니다.
-    parsedData[index] = { ...parsedData[index], ...newData };
+    if (!newData) {
+      // newData가 null이면, 해당 인덱스의 데이터를 삭제합니다.
+      delete parsedData[index];
+    } else {
+      // 그렇지 않으면, 특정 인덱스(예: 'dev')에 대한 데이터를 업데이트합니다.
+      // 여기서는 기존 데이터를 유지하면서 새 데이터로 오버라이드합니다.
+      parsedData[index] = { ...parsedData[index], ...newData };
+    }
 
     // 업데이트된 전체 데이터를 JSON 문자열로 변환하여 다시 localStorage에 저장합니다.
     localStorage.setItem(item, JSON.stringify(parsedData));

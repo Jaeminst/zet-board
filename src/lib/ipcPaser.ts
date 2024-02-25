@@ -7,10 +7,10 @@ export function ipcParser(response: string) {
   }
   if (!parsedResponse.success) {
     toast(`Error`, {
-      description: `${parsedResponse.data}`,
+      description: `${parsedResponse.error}`,
       duration: 5000
     });
-    return {}
+    return null;
   }
   throw new Error('data is Null');
 }
