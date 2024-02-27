@@ -17,11 +17,11 @@ export default function ProfileSearch({ disabled }: { disabled?: boolean }) {
   }, [profileList]);
 
   function handleSearch(value: string) {
-    const search = value ?? '';
+    const search = value.toLowerCase() ?? '';
     const filteredResult = profileList.filter(item =>
-      item.profileName.includes(search)
-      || item.accountId.includes(search)
-      || item.selectRole.includes(search)
+      item.profileName.toLowerCase().includes(search)
+      || item.accountId.toLowerCase().includes(search)
+      || item.selectRole?.toLowerCase().includes(search)
     );
     const searchProfiles = filteredResult as Profile[];
     value !== '' ? setProfileSearchList(searchProfiles) : setProfileSearchList(profileList)

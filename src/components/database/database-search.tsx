@@ -17,15 +17,15 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
   }, [databaseList]);
 
   function handleSearch(value: string) {
-    const search = value ?? '';
+    const search = value.toLowerCase() ?? '';
     const filteredResult = databaseList.filter(item =>
-      item.localport.includes(search)
-      || item.alias.includes(search)
-      || item.identifier.includes(search)
-      || item.status.includes(search)
-      || item.role.includes(search)
-      || item.engine.includes(search)
-      || item.size.includes(search)
+      item.localport.toLowerCase().includes(search)
+      || item.alias.toLowerCase().includes(search)
+      || item.identifier.toLowerCase().includes(search)
+      || item.status.toLowerCase().includes(search)
+      || item.role.toLowerCase().includes(search)
+      || item.engine.toLowerCase().includes(search)
+      || item.size.toLowerCase().includes(search)
     );
     const searchDatabases = filteredResult as DatabaseList[];
     value !== '' ? setDatabaseSearchList(searchDatabases) : setDatabaseSearchList(databaseList)
