@@ -1,4 +1,16 @@
-import { STSClient, GetCallerIdentityCommand, AssumeRoleCommand, STSClientConfig, AssumeRoleCommandInput } from "@aws-sdk/client-sts";
+import {
+  STSClient,
+  GetCallerIdentityCommand,
+  AssumeRoleCommand,
+  AssumeRoleCommandInput,
+} from "@aws-sdk/client-sts";
+
+interface ClientConfig {
+  credentials: {
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
+}
 
 /**
  * Get Caller Identity
@@ -12,7 +24,7 @@ import { STSClient, GetCallerIdentityCommand, AssumeRoleCommand, STSClientConfig
   }
  * @returns {Promise<object>} { Account: "STRING" }
  */
-export async function getCaller(config: STSClientConfig) {
+export async function getCaller(config: ClientConfig) {
   const client = new STSClient(config);
   const command = new GetCallerIdentityCommand({});
   const response = await client.send(command);
@@ -38,7 +50,10 @@ export async function getCaller(config: STSClientConfig) {
   }
  * @returns {Promise<object>} { Credentials: { ... } }
  */
-export async function assumeRole(config: STSClientConfig, input: AssumeRoleCommandInput) {
+export async function assumeRole(
+  config: ClientConfig,
+  input: AssumeRoleCommandInput
+) {
   const client = new STSClient(config);
   const command = new AssumeRoleCommand(input);
   const response = await client.send(command);

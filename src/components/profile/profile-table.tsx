@@ -2,9 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TrashIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp, TrashIcon } from 'lucide-react';
 import { useState } from 'react';
-import { setLocalStorage } from '@/lib/localStorage';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { EditProfile } from './edit-profile';
@@ -21,25 +20,46 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
     setProfileList(prevProfileList => prevProfileList.map(profile => 
       profile.idx === selectProfile.idx ? { ...profile, selectRole: role } : profile
     ));
-    setLocalStorage('profileList', selectProfile.profileName, {
-      selectRole: role,
-    });
   };
 
   const handleDeleteProfile = (idx: number) => {
     const profileToDelete = profileList.find(profile => profile.idx === idx);
     if (profileToDelete) {
       window.electron.profile.send('delete-profile', profileToDelete.profileName);
-      window.electron.profile.on('delete-profile', (deleteProfileString: string) => {
+      window.electron.profile.once('delete-profile', (deleteProfileString: string) => {
         ipcParser(deleteProfileString);
         setProfileList(profileList.filter(profile => profile.idx !== idx));
-        // newData 인수 없이 setLocalStorage를 호출하여 프로필을 삭제합니다.
-        setLocalStorage('profileList', profileToDelete.profileName);
       });
       if (profileToDelete.profileName === profileSession) {
         setProfileSession('Select Profile');
       }
     }
+  };
+
+  const swapProfileIdxUp = (selectedIdx: number) => {
+    setProfileList(currentList => {
+      const newList = [...currentList];
+      const selectedProfile = newList.find(p => p.idx === selectedIdx);
+      const aboveProfile = newList.find(p => p.idx === selectedIdx - 1);
+      if (selectedProfile && aboveProfile) {
+        selectedProfile.idx -= 1;
+        aboveProfile.idx += 1;
+      }
+      return newList;
+    });
+  };
+  
+  const swapProfileIdxDown = (selectedIdx: number) => {
+    setProfileList(currentList => {
+      const newList = [...currentList];
+      const selectedProfile = newList.find(p => p.idx === selectedIdx);
+      const belowProfile = newList.find(p => p.idx === selectedIdx + 1);
+      if (selectedProfile && belowProfile) {
+        selectedProfile.idx += 1;
+        belowProfile.idx -= 1;
+      }
+      return newList;
+    });
   };
 
   return (
@@ -53,7 +73,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {[...profiles].sort((a, b) => a.idx - b.idx).map((profile) => (
+        {Array.isArray(profileList) && [...profiles].sort((a, b) => a.idx - b.idx).map((profile) => (
           <TableRow key={profile.idx}>
             <TableCell>{profile.profileName}</TableCell>
             <TableCell>
@@ -73,12 +93,22 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
               </DropdownMenu>
             </TableCell>
             <TableCell>{profile.accountId}</TableCell>
-            <TableCell className="flex flex-row justify-center">
-              {/* <EditProfile idx={profile.idx} profile={profile} /> */}
+            <TableCell className="flex flex-row justify-center items-center p-2">
+              <EditProfile profile={profile} />
               <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
                 <TrashIcon className="w-4 h-4" />
                 <span className="sr-only">Delete</span>
               </Button>
+              <div className="w-12">
+                <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => swapProfileIdxUp(profile.idx)}>
+                  <ChevronUp className="w-4 h-4" />
+                  <span className="sr-only">SwapProfileIdxUp</span>
+                </Button>
+                <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => swapProfileIdxDown(profile.idx)}>
+                  <ChevronDown className="w-4 h-4" />
+                  <span className="sr-only">SwapProfileIdxDown</span>
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         ))}

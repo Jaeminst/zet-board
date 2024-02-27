@@ -2,7 +2,10 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type ipcProfile = 'init-profiles' | 'add-profile' | 'delete-profile'
+export type ipcProfile = 'init-profiles'
+                        | 'add-profile'
+                        | 'delete-profile'
+                        | 'update-profile'
 
 const electronHandler = {
   profile: {
@@ -15,8 +18,13 @@ const electronHandler = {
       ipcRenderer.on(channel, subscription);
 
       return () => {
-        ipcRenderer.removeListener(channel, subscription);
+        ipcRenderer.removeAllListeners(channel);
       };
+    },
+    once(channel: ipcProfile, func: (...args: unknown[]) => void) {
+      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
+        func(...args);
+      ipcRenderer.once(channel, subscription);
     },
   },
   setTitle: (title: string) => ipcRenderer.send('set-title', title),

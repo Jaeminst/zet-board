@@ -8,11 +8,10 @@ import { useEffect, useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSearch } from "@/contexts/ProfileSearchContext";
 import { ipcParser } from "@/lib/ipcPaser";
-import { setLocalStorage } from "@/lib/localStorage";
 
 export function AddProfile() {
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<EditProfileCredentials>();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
   const [profileList, setProfileList] = useProfile();
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
@@ -40,7 +39,7 @@ export function AddProfile() {
       accessKeyId,
       secretAccessKey,
     }));
-    window.electron.profile.on('add-profile', (addProfileString: string) => {
+    window.electron.profile.once('add-profile', (addProfileString: string) => {
       const addProfile = ipcParser(addProfileString) as ConfigureProfile;
       if (addProfile) {
         const newProfile = {
@@ -50,7 +49,6 @@ export function AddProfile() {
           roles: addProfile.roles, // 추가할 프로필에서 가져온 roles
         };
         setProfileList(prevProfiles => [...prevProfiles, newProfile]);
-        setLocalStorage('profileList', profileName, newProfile);
       };
     });
   };

@@ -31,6 +31,7 @@ export function ProfileCombo() {
         description: `Select Role: ${selectRole}`,
         duration: 5000
       });
+      setProfileSession('Select Profile');
     }
   };
 
@@ -50,7 +51,7 @@ export function ProfileCombo() {
       <PopoverContent className='w-[200px] p-0'>
         <Command>
           <CommandGroup>
-            {[...profileList].sort((a, b) => a.idx - b.idx).map((profile) => (
+            {Array.isArray(profileList) && [...profileList].sort((a, b) => a.idx - b.idx).map((profile) => (
               <CommandItem
                 key={profile.idx}
                 value={profile.profileName}

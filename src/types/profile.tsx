@@ -7,6 +7,8 @@ interface ProfileData {
 
 interface Profile extends ProfileData {
   profileName: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
 }
 
 interface ProfileStorage {
@@ -20,6 +22,15 @@ interface ConfigureProfile {
   roles: string[];
 }
 
+interface EditConfigureProfile {
+  oldProfileName: string;
+  newProfileData: {
+    profileName: string;
+    accountId: string;
+    roles: string[];
+  }
+}
+
 interface EditProfileData {
   idx?: number;
   profileName?: string;
@@ -29,16 +40,12 @@ interface EditProfileData {
 }
 
 interface ProfileCredentials {
+  oldProfileName?: string;
   profileName: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-}
-
-interface EditProfileCredentials extends ProfileCredentials {
-  idx: number;
+  accessKeyId?: string;
+  secretAccessKey?: string;
 }
 
 interface EditProfileProps {
-  idx: number;
-  profile: EditProfileCredentials;
+  profile: ProfileCredentials;
 }
