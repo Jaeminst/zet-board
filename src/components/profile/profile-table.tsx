@@ -8,6 +8,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { EditProfile } from './edit-profile';
 import { ipcParser } from '@/lib/ipcPaser';
+import { Loading } from '@/components/ui/loading';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const [profileList, setProfileList] = useProfile();
@@ -92,7 +93,13 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
                 )}
               </DropdownMenu>
             </TableCell>
-            <TableCell>{profile.accountId}</TableCell>
+            <TableCell>
+              {profile.accountId !== "" ? (
+                profile.accountId
+              ) : (
+                <Loading />
+              )}
+            </TableCell>
             <TableCell className="flex flex-row justify-center items-center p-2">
               <EditProfile profile={profile} />
               <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
