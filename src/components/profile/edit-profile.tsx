@@ -46,7 +46,13 @@ const [accessKey, setAccessKey] = useState("********************");
       const accessKeyId = editProfile.accessKeyId;
       const secretAccessKey = editProfile.secretAccessKey;
       setEditProfile(undefined);
-
+      setProfileList(prevProfiles => prevProfiles.map(profile => 
+        profile.profileName === editProfile.oldProfileName ? { ...profile,
+          profileName: editProfile.oldProfileName,
+          accountId: "",
+          roles: []
+        } : profile
+      ));
       window.electron.profile.send('update-profile', JSON.stringify({
         oldProfileName,
         newProfileData: {

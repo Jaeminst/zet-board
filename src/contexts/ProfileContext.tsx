@@ -14,7 +14,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (!initProfiles || initProfiles.length === 0) {
       // 프로필 데이터가 없거나 비어있으면 초기 프로필 설정 실행
       window.electron.profile.send('init-profiles');
-      window.electron.profile.once('init-profiles', (initProfilesString: string) => {
+      window.electron.profile.on('init-profiles', (initProfilesString: string) => {
         const initProfiles = ipcParser(initProfilesString) as Profile[];
         setProfileList(initProfiles);
       });
@@ -26,7 +26,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setLocalStorageProfileList(profileList);
-    console.log(profileList)
   }, [profileList]);
 
   return (

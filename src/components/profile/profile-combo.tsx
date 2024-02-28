@@ -31,6 +31,7 @@ export function ProfileCombo() {
         description: `Select Role: ${selectRole}`,
         duration: 5000
       });
+      localStorage.setItem('profileSession', 'Select Profile');
       setProfileSession('Select Profile');
     }
   };

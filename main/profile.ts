@@ -19,6 +19,10 @@ interface AwsCredentials {
   secretAccessKey: string;
 }
 
+// 자격 증명 파일 및 설정 파일 경로
+const credentialsFilePath = join(homedir(), ".aws", "credentials");
+const configFilePath = join(homedir(), ".aws", "config");
+
 async function getAwsCredentials(profile: string): Promise<AwsCredentials> {
   const credentialsPath = join(homedir(), '.aws', 'credentials');
   const content = await fs.readFile(credentialsPath, { encoding: 'utf-8' });
@@ -47,7 +51,8 @@ async function getAwsCredentials(profile: string): Promise<AwsCredentials> {
   return credentials;
 }
 
-export async function initProfile(profile: string) {
+// 프로파일 정보 조회
+async function initProfile(profile: string) {
   const credentials = await getAwsCredentials(profile);
   const config = { credentials };
   const getUser = await getUserName(config)
@@ -67,6 +72,32 @@ export async function initProfile(profile: string) {
   return { accountId, roles };
 }
 
+// 신규 프로파일 추가
+async function appendContentWithNewlineCheck(filePath: string, profileName: string, content: string) {
+  // 파일 내용 읽기 및 마지막 줄 공백 검사
+  let fileContent = await fs.readFile(filePath, 'utf8');
+  // 프로파일 중복 검사
+  if (fileContent.includes(`[${profileName}]`) || fileContent.includes(`[profile ${profileName}]`)) {
+    throw new Error('Profile already exists');
+  }
+  // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
+  const contentToAdd = fileContent.endsWith('\n') ? content : '\n' + content;
+  await fs.appendFile(filePath, contentToAdd);
+}
+
+// 기존 프로파일 삭제
+async function deleteProfileFromFile(filePath: string, profileName: string) {
+  let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
+  const profileStart = fileContent.indexOf(`[${profileName}]`);
+  if (profileStart === -1) {
+    return;
+  }
+  let profileEnd = fileContent.indexOf('[', profileStart + 1);
+  profileEnd = profileEnd === -1 ? fileContent.length : profileEnd;
+  fileContent = fileContent.substring(0, profileStart) + fileContent.substring(profileEnd);
+  await fs.writeFile(filePath, fileContent);
+};
+
 export function registerIpcProfile() {
   ipcMain.on('init-profiles', async event => {
     const filePath = join(homedir(), ".aws", "credentials");
@@ -79,16 +110,26 @@ export function registerIpcProfile() {
       const data = await fs.readFile(filePath, "utf8");
       for (const profile of profiles) {
         if (data.includes(`[${profile}]`)) {
-          const { accountId, roles } = await initProfile(profile);
           existingProfiles.push({
             idx: idx++, // idx 값 할당 후 증가
             profileName: profile, // 프로필 이름 추가
-            accountId: accountId, // AWS 계정 ID
-            roles: roles, // 역할 리스트
+            accountId: "", // AWS 계정 ID 초기화
+            roles: [], // 역할 리스트 초기화
           });
         }
       };
-      event.reply('init-profiles', successMessage(existingProfiles))
+      // 초기 프로파일 리스트를 전송합니다.
+      event.reply('init-profiles', successMessage(existingProfiles));
+    
+      // 오래 걸리는 작업을 처리합니다.
+      for (const profile of existingProfiles) {
+        const { accountId, roles } = await initProfile(profile.profileName);
+        // 기존에 추가된 프로파일 정보를 업데이트합니다.
+        profile.accountId = accountId;
+        profile.roles = roles;
+      };
+      // 업데이트된 프로파일 리스트를 전송합니다.
+      event.reply('init-profiles', successMessage(existingProfiles));
     } catch (error) {
       event.reply('init-profiles', errorMessage(error));
     }
@@ -98,21 +139,6 @@ export function registerIpcProfile() {
     try {
       const parsedData = ipcParser(profileData);
       const profileName = parsedData.profileName;
-      // 자격 증명 파일 경로
-      const credentialsFilePath = join(homedir(), ".aws", "credentials");
-      // 설정 파일 경로
-      const configFilePath = join(homedir(), ".aws", "config");
-      // 파일 내용 읽기 및 마지막 줄 공백 검사
-      async function appendContentWithNewlineCheck(filePath: string, content: string) {
-        let fileContent = await fs.readFile(filePath, 'utf8');
-        // 프로파일 중복 검사
-        if (fileContent.includes(`[${profileName}]`) || fileContent.includes(`[profile ${profileName}]`)) {
-          throw new Error('Profile already exists');
-        }
-        // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
-        const contentToAdd = fileContent.endsWith('\n') ? content : '\n' + content;
-        await fs.appendFile(filePath, contentToAdd);
-      }
       // 자격 증명 파일 및 설정 파일 내용 검사 및 추가
       const credentialsContent = `[${profileName}]
 aws_access_key_id=${parsedData.accessKeyId}
@@ -123,8 +149,8 @@ region = ap-northeast-2
 output = json
 `;
       await Promise.all([
-        appendContentWithNewlineCheck(credentialsFilePath, credentialsContent),
-        appendContentWithNewlineCheck(configFilePath, configContent)
+        appendContentWithNewlineCheck(credentialsFilePath, profileName, credentialsContent),
+        appendContentWithNewlineCheck(configFilePath, profileName, configContent)
       ]);
       const { accountId, roles } = await initProfile(profileName);
       event.reply('add-profile', successMessage({ accountId, roles }));
@@ -135,25 +161,11 @@ output = json
 
   ipcMain.on('delete-profile', async (event, profileName) => {
     try {
-      // 자격 증명 파일과 설정 파일 경로
-      const credentialsFilePath = join(homedir(), ".aws", "credentials");
-      const configFilePath = join(homedir(), ".aws", "config");
-      // 파일 내용 읽고 수정하는 함수를 정의
-      const deleteProfileFromFile = async (filePath: string, profileSectionName: string) => {
-        let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
-        const profileStart = fileContent.indexOf(`[${profileSectionName}]`);
-        if (profileStart === -1) {
-          return; // 프로파일이 파일에 없으면 아무 것도 하지 않음
-        }
-        let profileEnd = fileContent.indexOf('[', profileStart + 1);
-        profileEnd = profileEnd === -1 ? fileContent.length : profileEnd;
-        fileContent = fileContent.substring(0, profileStart) + fileContent.substring(profileEnd);
-        await fs.writeFile(filePath, fileContent);
-      };
       // 자격 증명 파일에서 프로파일 삭제
-      await deleteProfileFromFile(credentialsFilePath, profileName);
-      // 설정 파일에서 프로파일 삭제 (프로파일 이름 앞에 'profile ' 접두사 추가)
-      await deleteProfileFromFile(configFilePath, `profile ${profileName}`);
+      await Promise.all([
+        await deleteProfileFromFile(credentialsFilePath, profileName),
+        await deleteProfileFromFile(configFilePath, `profile ${profileName}`)
+      ]);
       event.reply('delete-profile', successMessage({ profileName }));
     } catch (error) {
       event.reply('delete-profile', errorMessage(error));
@@ -165,57 +177,31 @@ output = json
       const parsedData = ipcParser(profileData);
       const oldProfileName = parsedData.oldProfileName;
       const newProfileData = parsedData.newProfileData;
-      // 자격 증명 파일 및 설정 파일 경로
-      const credentialsFilePath = join(homedir(), ".aws", "credentials");
-      const configFilePath = join(homedir(), ".aws", "config");
+      const profileName = newProfileData.profileName;
 
-      // 기존 프로파일 삭제 로직
-      const deleteProfileFromFile = async (filePath: string, profileSectionName: string) => {
-        let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
-        const profileStart = fileContent.indexOf(`[${profileSectionName}]`);
-        if (profileStart === -1) {
-          return;
-        }
-        let profileEnd = fileContent.indexOf('[', profileStart + 1);
-        profileEnd = profileEnd === -1 ? fileContent.length : profileEnd;
-        fileContent = fileContent.substring(0, profileStart) + fileContent.substring(profileEnd);
-        await fs.writeFile(filePath, fileContent);
-      };
       await Promise.all([
         deleteProfileFromFile(credentialsFilePath, oldProfileName),
         deleteProfileFromFile(configFilePath, `profile ${oldProfileName}`)
       ]);
 
-      // 새 프로파일 추가 로직
-      // 파일 내용 읽기 및 마지막 줄 공백 검사
-      async function appendContentWithNewlineCheck(filePath: string, content: string) {
-        let fileContent = await fs.readFile(filePath, 'utf8');
-        // 프로파일 중복 검사
-        if (fileContent.includes(`[${newProfileData.profileName}]`) || fileContent.includes(`[profile ${newProfileData.profileName}]`)) {
-          throw new Error('Profile already exists');
-        }
-        // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
-        const contentToAdd = fileContent.endsWith('\n') ? content : '\n' + content;
-        await fs.appendFile(filePath, contentToAdd);
-      }
       // 자격 증명 파일 및 설정 파일 내용 검사 및 추가
-      const credentialsContent = `[${newProfileData.profileName}]
+      const credentialsContent = `[${profileName}]
 aws_access_key_id=${newProfileData.accessKeyId}
 aws_secret_access_key=${newProfileData.secretAccessKey}
 `;
-      const configContent = `[profile ${newProfileData.profileName}]
+      const configContent = `[profile ${profileName}]
 region = ap-northeast-2
 output = json
 `;
       await Promise.all([
-        appendContentWithNewlineCheck(credentialsFilePath, credentialsContent),
-        appendContentWithNewlineCheck(configFilePath, configContent)
+        appendContentWithNewlineCheck(credentialsFilePath, profileName, credentialsContent),
+        appendContentWithNewlineCheck(configFilePath, profileName, configContent)
       ]);
-      const { accountId, roles } = await initProfile(newProfileData.profileName);
+      const { accountId, roles } = await initProfile(profileName);
       event.reply('update-profile', successMessage({
         oldProfileName,
         newProfileData: {
-          profileName: newProfileData.profileName,
+          profileName,
           accountId,
           roles
         }

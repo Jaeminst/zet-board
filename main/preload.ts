@@ -6,6 +6,7 @@ export type ipcProfile = 'init-profiles'
                         | 'add-profile'
                         | 'delete-profile'
                         | 'update-profile'
+                        | 'assume-role'
 
 const electronHandler = {
   profile: {

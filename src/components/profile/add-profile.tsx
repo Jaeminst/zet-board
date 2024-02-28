@@ -30,10 +30,17 @@ export function AddProfile() {
     addProfileToResult(data);
   };
 
-  const addProfileToResult = (newProfile: ProfileCredentials) => {
+  const addProfileToResult = async (newProfile: ProfileCredentials) => {
     const profileName = newProfile.profileName;
     const accessKeyId = newProfile.accessKeyId;
     const secretAccessKey = newProfile.secretAccessKey;
+    const profile: Profile = {
+      idx: profileList.length,
+      profileName,
+      accountId: "",
+      roles: []
+    };
+    setProfileList(prevProfiles => [...prevProfiles, profile]);
     window.electron.profile.send('add-profile', JSON.stringify({
       profileName,
       accessKeyId,
@@ -42,13 +49,13 @@ export function AddProfile() {
     window.electron.profile.once('add-profile', (addProfileString: string) => {
       const addProfile = ipcParser(addProfileString) as ConfigureProfile;
       if (addProfile) {
-        const newProfile = {
-          idx: profileList.length, // 현재 profileList의 길이를 사용하여 idx 설정
-          profileName, // 함수 인자나 상태에서 가져온 profileName
-          accountId: addProfile.accountId, // 추가할 프로필에서 가져온 accountId
-          roles: addProfile.roles, // 추가할 프로필에서 가져온 roles
-        };
-        setProfileList(prevProfiles => [...prevProfiles, newProfile]);
+        setProfileList(prevProfiles => prevProfiles.map(profile => 
+          profile.profileName === profileName ? { ...profile,
+            profileName,
+            accountId: addProfile.accountId,
+            roles: addProfile.roles
+          } : profile
+        ));
       };
     });
   };
