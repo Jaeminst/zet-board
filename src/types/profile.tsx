@@ -11,10 +11,6 @@ interface Profile extends ProfileData {
   secretAccessKey?: string;
 }
 
-interface ProfileStorage {
-  [key: string]: ProfileData
-}
-
 interface ConfigureProfile {
   idx?: number;
   profileName: string;
@@ -48,4 +44,9 @@ interface ProfileCredentials {
 
 interface EditProfileProps {
   profile: ProfileCredentials;
+}
+
+interface ProfileSession {
+  profileName: string;
+  createdAt: string;
 }

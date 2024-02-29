@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 import { homedir } from "os";
 import { ipcMain } from "electron/main";
 import { getUserName, importListRoles } from "./aws/iamClient.js";
-import { getCaller } from "./aws/stsClient.js";
+import { getCaller, assumeRole } from "./aws/stsClient.js";
 import { errorMessage, successMessage } from "./utils/reply.js";
 import { ipcParser } from "./utils/ipcPaser.js";
 
@@ -17,6 +17,15 @@ interface ConfigureProfile {
 interface AwsCredentials {
   accessKeyId: string;
   secretAccessKey: string;
+  sessionToken?: string;
+}
+
+interface AssumeRoleInput {
+  RoleArn: string;
+  RoleSessionName: string;
+  DurationSeconds: number;
+  SerialNumber?: string;
+  TokenCode?: string;
 }
 
 // 자격 증명 파일 및 설정 파일 경로
@@ -24,8 +33,7 @@ const credentialsFilePath = join(homedir(), ".aws", "credentials");
 const configFilePath = join(homedir(), ".aws", "config");
 
 async function getAwsCredentials(profile: string): Promise<AwsCredentials> {
-  const credentialsPath = join(homedir(), '.aws', 'credentials');
-  const content = await fs.readFile(credentialsPath, { encoding: 'utf-8' });
+  const content = await fs.readFile(credentialsFilePath, { encoding: 'utf-8' });
   const lines = content.split(/\r?\n/);
   let currentProfile = '';
   let credentials: AwsCredentials | null = null; // 초기값을 null로 설정
@@ -36,15 +44,20 @@ async function getAwsCredentials(profile: string): Promise<AwsCredentials> {
     } else if (currentProfile === profile) {
       const matchAccessKey = line.match(/^aws_access_key_id\s*=\s*(.+)$/);
       const matchSecretKey = line.match(/^aws_secret_access_key\s*=\s*(.+)$/);
+      const matchSessionToken = line.match(/^aws_session_token\s*=\s*(.+)$/);
       if (matchAccessKey) {
         credentials = credentials || { accessKeyId: '', secretAccessKey: '' }; // 객체가 아직 없으면 생성
         credentials.accessKeyId = matchAccessKey[1];
       } else if (matchSecretKey) {
         credentials = credentials || { accessKeyId: '', secretAccessKey: '' }; // 객체가 아직 없으면 생성
         credentials.secretAccessKey = matchSecretKey[1];
+      } else if (matchSessionToken) {
+        credentials = credentials || { accessKeyId: '', secretAccessKey: '' }; // 객체가 아직 없으면 생성
+        credentials.sessionToken = matchSessionToken[1]; // sessionToken을 저장합니다.
       }
     }
   }
+
   if (!credentials || !credentials.accessKeyId || !credentials.secretAccessKey) {
     throw new Error(`Credentials not found for profile: ${profile}`);
   }
@@ -73,7 +86,7 @@ async function initProfile(profile: string) {
 }
 
 // 신규 프로파일 추가
-async function appendContentWithNewlineCheck(filePath: string, profileName: string, content: string) {
+async function appendProfileFromFile(filePath: string, profileName: string, content: string) {
   // 파일 내용 읽기 및 마지막 줄 공백 검사
   let fileContent = await fs.readFile(filePath, 'utf8');
   // 프로파일 중복 검사
@@ -100,14 +113,13 @@ async function deleteProfileFromFile(filePath: string, profileName: string) {
 
 export function registerIpcProfile() {
   ipcMain.on('init-profiles', async event => {
-    const filePath = join(homedir(), ".aws", "credentials");
     const profiles = ["dev", "qa", "stage", "prod"];
     // let existingProfiles: ProfileStorage = {};    
     let existingProfiles: ConfigureProfile[] = [];
     let idx = 0;
 
     try {
-      const data = await fs.readFile(filePath, "utf8");
+      const data = await fs.readFile(credentialsFilePath, "utf8");
       for (const profile of profiles) {
         if (data.includes(`[${profile}]`)) {
           existingProfiles.push({
@@ -149,8 +161,8 @@ region = ap-northeast-2
 output = json
 `;
       await Promise.all([
-        appendContentWithNewlineCheck(credentialsFilePath, profileName, credentialsContent),
-        appendContentWithNewlineCheck(configFilePath, profileName, configContent)
+        appendProfileFromFile(credentialsFilePath, profileName, credentialsContent),
+        appendProfileFromFile(configFilePath, profileName, configContent)
       ]);
       const { accountId, roles } = await initProfile(profileName);
       event.reply('add-profile', successMessage({ accountId, roles }));
@@ -163,8 +175,8 @@ output = json
     try {
       // 자격 증명 파일에서 프로파일 삭제
       await Promise.all([
-        await deleteProfileFromFile(credentialsFilePath, profileName),
-        await deleteProfileFromFile(configFilePath, `profile ${profileName}`)
+        deleteProfileFromFile(credentialsFilePath, profileName),
+        deleteProfileFromFile(configFilePath, `profile ${profileName}`)
       ]);
       event.reply('delete-profile', successMessage({ profileName }));
     } catch (error) {
@@ -194,8 +206,8 @@ region = ap-northeast-2
 output = json
 `;
       await Promise.all([
-        appendContentWithNewlineCheck(credentialsFilePath, profileName, credentialsContent),
-        appendContentWithNewlineCheck(configFilePath, profileName, configContent)
+        appendProfileFromFile(credentialsFilePath, profileName, credentialsContent),
+        appendProfileFromFile(configFilePath, profileName, configContent)
       ]);
       const { accountId, roles } = await initProfile(profileName);
       event.reply('update-profile', successMessage({
@@ -208,6 +220,72 @@ output = json
       }));
     } catch (error) {
       event.reply('update-profile', errorMessage(error));
+    }
+  });
+
+  ipcMain.on('assume-role', async (event, profileData) => {
+    try {
+      const parsedData = ipcParser(profileData);
+      const profileName = `${parsedData.profileName}`;
+      const tokenSuffix = `${parsedData.tokenSuffix}`;
+      const sessionProfileName = `${profileName}${tokenSuffix}`;
+      const accountId = parsedData.accountId;
+      const role = parsedData.role;
+      const tokenCode = parsedData?.tokenCode;
+      const credentials = await getAwsCredentials(profileName);
+      const config = { credentials };
+      const getUser = await getUserName(config)
+      if (!getUser || !getUser.User) {
+        throw new Error('Failed to get user information');
+      }
+      const userName = getUser.User.UserName
+      if (!userName) {
+        throw new Error('Failed to get user name');
+      }
+      let input: AssumeRoleInput = {
+        RoleArn: "",
+        RoleSessionName: "",
+        DurationSeconds: 0
+      }
+      if (tokenCode) {
+        input = {
+          RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
+          RoleSessionName: userName,
+          DurationSeconds: 3600,
+          SerialNumber: `arn:aws:iam::${accountId}:mfa/${userName}`,
+          TokenCode: "123456", // 브라우저에서 입력한 값으로 변경해야 함
+        }
+      } else {
+        input = {
+          RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
+          RoleSessionName: userName,
+          DurationSeconds: 3600,
+        }
+      }
+      const assumeRoleResponse = await assumeRole(config, input)
+      if (!assumeRoleResponse || !assumeRoleResponse.Credentials) {
+        throw new Error('Failed to assume role');
+      }
+      await Promise.all([
+        deleteProfileFromFile(credentialsFilePath, sessionProfileName),
+        deleteProfileFromFile(configFilePath, `profile ${sessionProfileName}`)
+      ]);
+      const credentialsContent = `[${sessionProfileName}]
+aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
+aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
+aws_session_token=${assumeRoleResponse.Credentials.SessionToken}
+`;
+      const configContent = `[profile ${sessionProfileName}]
+region = ap-northeast-2
+output = json
+`;
+      await Promise.all([
+        appendProfileFromFile(credentialsFilePath, sessionProfileName, credentialsContent),
+        appendProfileFromFile(configFilePath, sessionProfileName, configContent)
+      ]);
+      event.reply('assume-role', successMessage(sessionProfileName));
+    } catch (error) {
+      event.reply('assume-role', errorMessage(error));
     }
   });
 };

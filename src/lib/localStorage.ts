@@ -1,20 +1,23 @@
 export function getLocalStorageProfileList(): Profile[] {
-  const data = localStorage.getItem('profileList');
+  const data = localStorage.getItem("profileList");
   if (data) {
-    const profilesObject: ProfileStorage = JSON.parse(data);
-    return Object.entries(profilesObject).map(([profileName, profileData]) => ({
-      profileName,
-      ...profileData,
-    }));
+    return JSON.parse(data);
   }
   return [];
 }
 
 export function setLocalStorageProfileList(initProfiles: Profile[]) {
-  const profilesObject: ProfileStorage = initProfiles.reduce((acc, profile) => {
-    const { profileName, ...rest } = profile;
-    acc[profileName] = rest;
-    return acc;
-  }, {} as ProfileStorage);
-  localStorage.setItem('profileList', JSON.stringify(profilesObject));
+  localStorage.setItem("profileList", JSON.stringify(initProfiles));
+}
+
+export function getLocalStorageProfileSessions(): ProfileSession[] {
+  const data = localStorage.getItem("profileSessions");
+  if (data) {
+    return JSON.parse(data);
+  }
+  return [];
+}
+
+export function setLocalStorageProfileSessions(profileSessions: ProfileSession[]) {
+  localStorage.setItem("profileSessions", JSON.stringify(profileSessions));
 }
