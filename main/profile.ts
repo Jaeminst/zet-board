@@ -87,11 +87,11 @@ async function initProfile(profile: string) {
 }
 
 // 신규 프로파일 추가
-async function appendProfileFromFile(filePath: string, profileName: string, content: string) {
+async function appendProfileInFile(filePath: string, profileName: string, content: string) {
   // 파일 내용 읽기 및 마지막 줄 공백 검사
   let fileContent = await fs.readFile(filePath, 'utf8');
   // 프로파일 중복 검사
-  if (fileContent.includes(`[${profileName}]`) || fileContent.includes(`[profile ${profileName}]`)) {
+  if (fileContent.includes(profileName)) {
     throw new Error('Profile already exists');
   }
   // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
@@ -100,9 +100,9 @@ async function appendProfileFromFile(filePath: string, profileName: string, cont
 }
 
 // 기존 프로파일 삭제
-async function deleteProfileFromFile(filePath: string, profileName: string) {
+async function deleteProfileInFile(filePath: string, profileName: string) {
   let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
-  const profileStart = fileContent.indexOf(`[${profileName}]`);
+  const profileStart = fileContent.indexOf(profileName);
   if (profileStart === -1) {
     return;
   }
@@ -111,6 +111,27 @@ async function deleteProfileFromFile(filePath: string, profileName: string) {
   fileContent = fileContent.substring(0, profileStart) + fileContent.substring(profileEnd);
   await fs.writeFile(filePath, fileContent);
 };
+
+async function updateProfileInFile(filePath: string, oldProfileName: string, newProfileData: string) {
+  // 파일의 전체 내용을 읽어옵니다.
+  let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
+
+  // 프로필의 시작 위치를 찾습니다.
+  const startIdx = fileContent.indexOf(oldProfileName);
+  if (startIdx === -1) {
+    throw new Error('Profile not found');
+  }
+
+  // 다음 프로필의 시작 위치를 찾습니다. 없다면 파일 끝으로 간주합니다.
+  let endIdx = fileContent.indexOf('\n', startIdx + newProfileData.length - 1);
+  endIdx = endIdx !== -1 ? endIdx : fileContent.length;
+
+  // 시작 위치와 끝 위치를 기준으로 파일 내용을 교체합니다.
+  fileContent = fileContent.substring(0, startIdx) + newProfileData + fileContent.substring(endIdx);
+
+  // 변경된 내용으로 파일을 다시 씁니다.
+  await fs.writeFile(filePath, fileContent, { encoding: 'utf-8' });
+}
 
 export function registerIpcProfile() {
   ipcMain.on('init-profiles', async event => {
@@ -154,15 +175,13 @@ export function registerIpcProfile() {
       // 자격 증명 파일 및 설정 파일 내용 검사 및 추가
       const credentialsContent = `[${profileName}]
 aws_access_key_id=${parsedData.accessKeyId}
-aws_secret_access_key=${parsedData.secretAccessKey}
-`;
+aws_secret_access_key=${parsedData.secretAccessKey}`;
       const configContent = `[profile ${profileName}]
 region = ap-northeast-2
-output = json
-`;
+output = json`;
       await Promise.all([
-        appendProfileFromFile(credentialsFilePath, profileName, credentialsContent),
-        appendProfileFromFile(configFilePath, profileName, configContent)
+        appendProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
+        appendProfileInFile(configFilePath, `[profile ${profileName}]`, configContent)
       ]);
       const { accountId, roles } = await initProfile(profileName);
       event.reply('add-profile', successMessage({ accountId, roles }));
@@ -175,8 +194,8 @@ output = json
     try {
       // 자격 증명 파일에서 프로파일 삭제
       await Promise.all([
-        deleteProfileFromFile(credentialsFilePath, profileName),
-        deleteProfileFromFile(configFilePath, `profile ${profileName}`)
+        deleteProfileInFile(credentialsFilePath, `[${profileName}]`),
+        deleteProfileInFile(configFilePath, `[profile ${profileName}]`)
       ]);
       event.reply('delete-profile', successMessage({ profileName }));
     } catch (error) {
@@ -191,23 +210,16 @@ output = json
       const newProfileData = parsedData.newProfileData;
       const profileName = newProfileData.profileName;
 
-      await Promise.all([
-        deleteProfileFromFile(credentialsFilePath, oldProfileName),
-        deleteProfileFromFile(configFilePath, `profile ${oldProfileName}`)
-      ]);
-
-      // 자격 증명 파일 및 설정 파일 내용 검사 및 추가
-      const credentialsContent = `[${profileName}]
+    // accessKeyId와 secretAccessKey의 존재 여부에 따라 credentialsContent 구성 변경
+    let credentialsContent = `[${profileName}]`;
+    if (newProfileData.accessKeyId && newProfileData.secretAccessKey) {
+      credentialsContent += `
 aws_access_key_id=${newProfileData.accessKeyId}
-aws_secret_access_key=${newProfileData.secretAccessKey}
-`;
-      const configContent = `[profile ${profileName}]
-region = ap-northeast-2
-output = json
-`;
+aws_secret_access_key=${newProfileData.secretAccessKey}`;
+    }
       await Promise.all([
-        appendProfileFromFile(credentialsFilePath, profileName, credentialsContent),
-        appendProfileFromFile(configFilePath, profileName, configContent)
+        updateProfileInFile(credentialsFilePath, `[${oldProfileName}]`, credentialsContent),
+        updateProfileInFile(configFilePath, `[profile ${oldProfileName}]`, `[profile ${profileName}]`),
       ]);
       const { accountId, roles } = await initProfile(profileName);
       event.reply('update-profile', successMessage({
@@ -266,10 +278,11 @@ output = json
       if (!assumeRoleResponse || !assumeRoleResponse.Credentials) {
         throw new Error('Failed to assume role');
       }
-      await Promise.all([
-        deleteProfileFromFile(credentialsFilePath, sessionProfileName),
-        deleteProfileFromFile(configFilePath, `profile ${sessionProfileName}`)
-      ]);
+      const defaultCredentialsContent = `[default]
+aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
+aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
+aws_session_token=${assumeRoleResponse.Credentials.SessionToken}
+`;
       const credentialsContent = `[${sessionProfileName}]
 aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
 aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
@@ -280,8 +293,9 @@ region = ap-northeast-2
 output = json
 `;
       await Promise.all([
-        appendProfileFromFile(credentialsFilePath, sessionProfileName, credentialsContent),
-        appendProfileFromFile(configFilePath, sessionProfileName, configContent),
+        updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent),
+        updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
+        updateProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent),
       ]);
       event.reply('assume-role', successMessage(profileName));
       setTimer('1h', () => {

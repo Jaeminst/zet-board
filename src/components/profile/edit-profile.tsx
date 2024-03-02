@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { FileEditIcon } from "lucide-react"
 import { useProfile } from '@/contexts/ProfileContext';
 import { useForm } from 'react-hook-form'
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ipcParser } from "@/lib/ipcParser";
 
 export function EditProfile({ profile }: EditProfileProps ) {
@@ -13,24 +13,19 @@ export function EditProfile({ profile }: EditProfileProps ) {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
   const [profileList, setProfileList] = useProfile();
   const [editProfile, setEditProfile] = useState<ProfileCredentials>();
-  const [accessKey, setAccessKey] = useState("********************");
-  const [secretKey, setSecretKey] = useState("****************************************");
+  const [isAccessKeyFocused, setAccessKeyFocused] = useState(false);
+  const [isSecretKeyFocused, setSecretKeyFocused] = useState(false);
 
-  // 입력 필드 포커스 시 동작할 함수
-  const handleFocus = (e: { target: { placeholder: string; }; }) => {
-    if (e.target.placeholder === "********************") {
-      setAccessKey("Enter your access key");
-    }
-    if (e.target.placeholder === "****************************************") {
-      setSecretKey("Enter your secret key");
-    }
-  };
+  const handleFocus = useCallback(() => {
+    setAccessKeyFocused(true);
+    setSecretKeyFocused(true);
+  }, []);
 
   useEffect(() => {
     if (!open) {
       reset();
-      setAccessKey("********************");
-      setSecretKey("****************************************");
+      setAccessKeyFocused(false);
+      setSecretKeyFocused(false);
     }
   }, [open, reset]);
 
@@ -113,10 +108,10 @@ export function EditProfile({ profile }: EditProfileProps ) {
               </label>
               <Input
                 id="accessKeyId"
-                placeholder={accessKey}
+                placeholder={isAccessKeyFocused ? 'Enter your access key' : '********************'}
                 onFocus={handleFocus}
                 {...register('accessKeyId',{
-                  required: ' is required.',
+                  required: isAccessKeyFocused ? ' is required.' : false,
                 })}
               />
             </div>
@@ -127,10 +122,10 @@ export function EditProfile({ profile }: EditProfileProps ) {
               </label>
               <Input
                 id="secretAccessKey"
-                placeholder={secretKey}
+                placeholder={isSecretKeyFocused ? 'Enter your secret key' : '****************************************'}
                 onFocus={handleFocus}
                 {...register('secretAccessKey',{
-                  required: ' is required.',
+                  required: isSecretKeyFocused ? ' is required.' : false,
                 })}
               />
             </div>
