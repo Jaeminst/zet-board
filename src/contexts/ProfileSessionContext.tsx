@@ -1,13 +1,13 @@
 'use client';
-import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
+import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect, useCallback } from 'react';
 import { getLocalStorageProfileSessions, setLocalStorageProfileSessions } from '@/lib/localStorage';
-import { ipcParser } from '@/lib/ipcPaser';
+import { ipcParser } from '@/lib/ipcParser';
 import { useProfile } from '@/contexts/ProfileContext';
 
 const ProfileSessionContext = createContext<[string, Dispatch<SetStateAction<string>>] | undefined>(undefined);
 
 export function ProfileSessionProvider({ children }: { children: ReactNode }) {
-  const [profileList, setProfileList] = useProfile();
+  const [profileList] = useProfile();
   const [profileSession, setProfileSession] = useState<string>('');
 
   useEffect(() => {
@@ -15,70 +15,72 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
     setProfileSession(localStorageProfileSession || 'Select Profile')
   }, []);
 
+  const updateLocalStorageSession = useCallback((profileName: string) => {
+    let profileSessions = getLocalStorageProfileSessions();
+    const nowString = new Date().toISOString();
+    const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
+    if (existingSession) {
+      // Update existing session timestamp
+      profileSessions = profileSessions.map(session => 
+        session.profileName === profileSession ? { ...session, createdAt: nowString } : session
+      );
+    } else {
+      // Add new session
+      profileSessions.push({ profileName, createdAt: nowString });
+    }
+    setLocalStorageProfileSessions(profileSessions);
+  }, [profileSession]);
+
+  const renewSession = useCallback(async () => {
+    const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
+    if (!selectedProfile) return;
+    
+    // 세션 갱신 로직을 여기에 구현
+    window.electron.profile.send('assume-role', JSON.stringify({
+      profileName: profileSession,
+      tokenSuffix: `_token`,
+      accountId: selectedProfile.accountId,
+      role: selectedProfile.selectRole,
+    }));
+    window.electron.profile.once('assume-role', (response: string) => {
+      const updatedProfileSession = ipcParser(response);
+      if (updatedProfileSession) {
+        updateLocalStorageSession(updatedProfileSession)
+      }
+    });
+  }, [profileList, profileSession, updateLocalStorageSession]); // 필요한 의존성 명시
+
   useEffect(() => {
     if (profileSession && profileSession !== 'Select Profile') {
-      const now = new Date();
-      const nowString = now.toISOString()
-      let profileSessions: ProfileSession[] = getLocalStorageProfileSessions();
-      const selectedProfileSession = profileSessions.find(ps => ps.profileName === profileSession);
-      if (selectedProfileSession !== undefined) {
-        const timePassed = now.getTime() - new Date(selectedProfileSession.createdAt).getTime();
-        if (timePassed >= 55 * 60 * 1000) { // 55분이 지났는지 확인
-          const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
-          if (selectedProfile !== undefined) {
-            window.electron.profile.send('assume-role', JSON.stringify({
-              profileName: profileSession,
-              tokenSuffix: `_token`,
-              accountId: selectedProfile.accountId,
-              role: selectedProfile.selectRole,
-              // tokenCode: "",
-            }));
-          }
-          window.electron.profile.on('assume-role', (sessionProfileNameString: string) => {
-            ipcParser(sessionProfileNameString);
-          });
-          const updatedProfileSessions = profileSessions.map(session => {
-            if (session.profileName === profileSession) {
-              return { ...session, createdAt: nowString };
-            }
-            return session;
-          });
-          setLocalStorageProfileSessions(updatedProfileSessions);
-        }
-      } else {
-        const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
-        if (selectedProfile !== undefined) {
-          window.electron.profile.send('assume-role', JSON.stringify({
-            profileName: profileSession,
-            tokenSuffix: `_token`,
-            accountId: selectedProfile.accountId,
-            role: selectedProfile.selectRole,
-            // tokenCode: "",
-          }));
-        }
-        window.electron.profile.on('assume-role', (sessionProfileNameString: string) => {
-          ipcParser(sessionProfileNameString);
-        });
-        const existingSessionIndex = profileSessions.findIndex(session => session.profileName === profileSession);
-        if (existingSessionIndex !== -1) {
-          const updatedProfileSessions = profileSessions.map(session => {
-            if (session.profileName === profileSession) {
-              return { ...session, createdAt: nowString };
-            }
-            return session;
-          });
-          setLocalStorageProfileSessions(updatedProfileSessions);
-        } else {
-          const newProfileSession = {
-            profileName: profileSession,
-            createdAt: nowString,
-          };
-          setLocalStorageProfileSessions([...profileSessions, newProfileSession]);
-        }
+      const profileSessions = getLocalStorageProfileSessions();
+      const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
+      if (!selectedProfile) return;
+      const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
+
+      // Send 'assume-role' only if there's no session or it's outdated
+      if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
+        renewSession();
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profileSession]);
+    const handleSessionExpired = (response: string) => {
+      const expiredProfileSession = ipcParser(response);
+      if (expiredProfileSession === profileSession) {
+        const profileSessions = getLocalStorageProfileSessions();
+        const selectedProfile = profileList.find(profile => profile.profileName === expiredProfileSession);
+        if (!selectedProfile) return;
+        const existingSession = profileSessions.find(ps => ps.profileName === expiredProfileSession);
+        // Send 'assume-role' only if there's no session or it's outdated
+        if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
+          renewSession();
+        }
+      }
+    };
+    window.electron.profile.on('session-expired', handleSessionExpired);
+    return () => {
+      // Clean up the effect when component unmounts or updates
+      window.electron.profile.removeAllListeners('session-expired');
+    };
+  }, [profileList, profileSession, renewSession]);
 
   return (
     <ProfileSessionContext.Provider value={[profileSession, setProfileSession]}>
