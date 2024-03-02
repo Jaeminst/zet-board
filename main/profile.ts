@@ -133,7 +133,6 @@ export function registerIpcProfile() {
       };
       // 초기 프로파일 리스트를 전송합니다.
       event.reply('init-profiles', successMessage(existingProfiles));
-    
       // 오래 걸리는 작업을 처리합니다.
       for (const profile of existingProfiles) {
         const { accountId, roles } = await initProfile(profile.profileName);
