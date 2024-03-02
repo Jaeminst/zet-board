@@ -22,7 +22,9 @@ export default function RootLayout({
             </ProfileSessionProvider>
           </ProfileSearchProvider>
         </ProfileProvider>
-        <Toaster />
+        <Toaster
+          position="bottom-right"
+        />
       </body>
     </html>
   );

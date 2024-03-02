@@ -48,7 +48,7 @@ export default function DatabaseTable({ databases }: { databases: DatabaseList[]
       await navigator.clipboard.writeText(text);
       toast("Copied to clipboard", {
         description: text,
-        duration: 2000
+        duration: 2000,
       })
     } catch (err) {
       alert(`Failed to copy: ${err}`);
