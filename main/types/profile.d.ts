@@ -1,0 +1,6 @@
+type ipcProfile = 'init-profiles'
+                | 'add-profile'
+                | 'delete-profile'
+                | 'update-profile'
+                | 'assume-role'
+                | 'session-expired'
