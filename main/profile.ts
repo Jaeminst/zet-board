@@ -284,7 +284,7 @@ output = json
         appendProfileFromFile(configFilePath, sessionProfileName, configContent),
       ]);
       event.reply('assume-role', successMessage(profileName));
-      setTimer('30s', () => {
+      setTimer('1h', () => {
         event.reply('session-expired', successMessage(profileName))
       })
     } catch (error) {
