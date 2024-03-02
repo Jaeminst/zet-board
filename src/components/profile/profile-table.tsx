@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { EditProfile } from './edit-profile';
-import { ipcParser } from '@/lib/ipcPaser';
+import { ipcParser } from '@/lib/ipcParser';
 import { Loading } from '@/components/ui/loading';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {

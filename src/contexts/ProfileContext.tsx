@@ -1,5 +1,5 @@
 'use client';
-import { ipcParser } from '@/lib/ipcPaser';
+import { ipcParser } from '@/lib/ipcParser';
 import { getLocalStorageProfileList, setLocalStorageProfileList } from '@/lib/localStorage';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
 

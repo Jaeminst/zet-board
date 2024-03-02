@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { useEffect, useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSearch } from "@/contexts/ProfileSearchContext";
-import { ipcParser } from "@/lib/ipcPaser";
+import { ipcParser } from "@/lib/ipcParser";
 
 export function AddProfile() {
   const [open, setOpen] = useState(false);
