@@ -6,9 +6,9 @@ import { useDatabase } from '@/contexts/DatabaseContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { toast } from 'sonner';
 import { useEffect } from 'react';
 import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
+import { copyToClipboard } from '@/lib/clipboard';
 
 export default function DatabaseTable({ databases }: { databases: DatabaseList[] }) {
   const [databaseList, setDatabaseList] = useDatabase();
@@ -41,18 +41,6 @@ export default function DatabaseTable({ databases }: { databases: DatabaseList[]
     setDatabaseList(updatedList);
     localStorage.setItem(`databaseList_${profileSession}`, JSON.stringify(updatedList));
     localStorage.setItem(`databaseSetting_${profileSession}`, JSON.stringify(updatedList));
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast("Copied to clipboard", {
-        description: text,
-        duration: 2000,
-      })
-    } catch (err) {
-      alert(`Failed to copy: ${err}`);
-    }
   };
 
   return (
@@ -96,7 +84,7 @@ export default function DatabaseTable({ databases }: { databases: DatabaseList[]
                     <Button
                       type="button"
                       onClick={() => copyToClipboard(database.endpoint)}
-                      className="w-full h-10 bg-white text-black p-0 pl-1.5 justify-start"
+                      className="w-full h-10 p-0 pl-1.5 justify-start"
                       variant="ghost"
                     >
                       {database.identifier}

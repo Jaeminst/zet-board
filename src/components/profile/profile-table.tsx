@@ -9,6 +9,8 @@ import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { EditProfile } from './edit-profile';
 import { ipcParser } from '@/lib/ipcParser';
 import { Loading } from '@/components/ui/loading';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { copyToClipboard } from '@/lib/clipboard';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const [profileList, setProfileList] = useProfile();
@@ -69,7 +71,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
         <TableRow>
           <TableHead className="w-40">Profile</TableHead>
           <TableHead className="w-64 pl-8" >Role</TableHead>
-          <TableHead className="w-64">Account ID</TableHead>
+          <TableHead className="w-64 pl-6">Account ID</TableHead>
           <TableHead className="w-1 text-center">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -95,7 +97,22 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
             </TableCell>
             <TableCell>
               {profile.accountId !== "" ? (
-                profile.accountId
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => copyToClipboard(profile.accountId)}
+                        className="p-0 pl-1.5 pr-1.5 justify-start"
+                        variant="ghost"
+                      >
+                        {profile.accountId}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Copy to account id</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ) : (
                 <Loading />
               )}
