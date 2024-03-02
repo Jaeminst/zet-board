@@ -281,17 +281,14 @@ aws_secret_access_key=${newProfileData.secretAccessKey}`;
       const defaultCredentialsContent = `[default]
 aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
 aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
-aws_session_token=${assumeRoleResponse.Credentials.SessionToken}
-`;
+aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
       const credentialsContent = `[${sessionProfileName}]
 aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
 aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
-aws_session_token=${assumeRoleResponse.Credentials.SessionToken}
-`;
+aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
       const configContent = `[profile ${sessionProfileName}]
 region = ap-northeast-2
-output = json
-`;
+output = json`;
       await Promise.all([
         updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent),
         updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
