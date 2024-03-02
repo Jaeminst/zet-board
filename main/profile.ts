@@ -6,6 +6,7 @@ import { getUserName, importListRoles } from "./aws/iamClient.js";
 import { getCaller, assumeRole } from "./aws/stsClient.js";
 import { errorMessage, successMessage } from "./utils/reply.js";
 import { ipcParser } from "./utils/ipcPaser.js";
+import { setTimer } from "./utils/setTimer.js";
 
 interface ConfigureProfile {
   idx?: number;
@@ -281,9 +282,12 @@ output = json
 `;
       await Promise.all([
         appendProfileFromFile(credentialsFilePath, sessionProfileName, credentialsContent),
-        appendProfileFromFile(configFilePath, sessionProfileName, configContent)
+        appendProfileFromFile(configFilePath, sessionProfileName, configContent),
       ]);
-      event.reply('assume-role', successMessage(sessionProfileName));
+      event.reply('assume-role', successMessage(profileName));
+      setTimer('30s', () => {
+        event.reply('session-expired', successMessage(profileName))
+      })
     } catch (error) {
       event.reply('assume-role', errorMessage(error));
     }
