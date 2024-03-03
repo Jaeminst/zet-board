@@ -1,11 +1,10 @@
 import { join } from "path";
 import { promises as fs } from "fs";
 import { homedir } from "os";
-import { ipcMain } from "electron/main";
 import { getUserName, importListRoles } from "./aws/iamClient.js";
 import { getCaller, assumeRole } from "./aws/stsClient.js";
-import { errorMessage, successMessage } from "./utils/reply.js";
-import { ipcParser } from "./utils/ipcPaser.js";
+import { successMessage } from "./utils/reply.js";
+import { ipcMainListener } from "./utils/ipc.js";
 import { setTimer } from "./utils/setTimer.js";
 
 interface ConfigureProfile {
@@ -134,13 +133,12 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
 }
 
 export function registerIpcProfile() {
-  ipcMain.on('init-profiles', async event => {
+  ipcMainListener('init-profiles', async ({ event }) => {
     const profiles = ["dev", "qa", "stage", "prod"];
     // let existingProfiles: ProfileStorage = {};    
     let existingProfiles: ConfigureProfile[] = [];
     let idx = 0;
 
-    try {
       const data = await fs.readFile(credentialsFilePath, "utf8");
       for (const profile of profiles) {
         if (data.includes(`[${profile}]`)) {
@@ -162,20 +160,15 @@ export function registerIpcProfile() {
         profile.roles = roles;
       };
       // 업데이트된 프로파일 리스트를 전송합니다.
-      event.reply('init-profiles', successMessage(existingProfiles));
-    } catch (error) {
-      event.reply('init-profiles', errorMessage(error));
-    }
+      return existingProfiles;
   });
 
-  ipcMain.on('add-profile', async (event, profileData) => {
-    try {
-      const parsedData = ipcParser(profileData);
-      const profileName = parsedData.profileName;
+  ipcMainListener('add-profile', async ({ data }) => {
+      const profileName = data.profileName;
       // 자격 증명 파일 및 설정 파일 내용 검사 및 추가
       const credentialsContent = `[${profileName}]
-aws_access_key_id=${parsedData.accessKeyId}
-aws_secret_access_key=${parsedData.secretAccessKey}`;
+aws_access_key_id=${data.accessKeyId}
+aws_secret_access_key=${data.secretAccessKey}`;
       const configContent = `[profile ${profileName}]
 region = ap-northeast-2
 output = json`;
@@ -184,30 +177,20 @@ output = json`;
         appendProfileInFile(configFilePath, `[profile ${profileName}]`, configContent)
       ]);
       const { accountId, roles } = await initProfile(profileName);
-      event.reply('add-profile', successMessage({ accountId, roles }));
-    } catch (error) {
-      event.reply('add-profile', errorMessage(error));
-    }
+      return { accountId, roles };
   });
 
-  ipcMain.on('delete-profile', async (event, profileName) => {
-    try {
-      // 자격 증명 파일에서 프로파일 삭제
+  ipcMainListener('delete-profile', async ({ data }) => {
       await Promise.all([
-        deleteProfileInFile(credentialsFilePath, `[${profileName}]`),
-        deleteProfileInFile(configFilePath, `[profile ${profileName}]`)
+        deleteProfileInFile(credentialsFilePath, `[${data}]`),
+        deleteProfileInFile(configFilePath, `[profile ${data}]`)
       ]);
-      event.reply('delete-profile', successMessage({ profileName }));
-    } catch (error) {
-      event.reply('delete-profile', errorMessage(error));
-    }
+      return { data };
   });
 
-  ipcMain.on('update-profile', async (event, profileData) => {
-    try {
-      const parsedData = ipcParser(profileData);
-      const oldProfileName = parsedData.oldProfileName;
-      const newProfileData = parsedData.newProfileData;
+  ipcMainListener('update-profile', async ({ data }) => {
+      const oldProfileName = data.oldProfileName;
+      const newProfileData = data.newProfileData;
       const profileName = newProfileData.profileName;
 
     // accessKeyId와 secretAccessKey의 존재 여부에 따라 credentialsContent 구성 변경
@@ -222,28 +205,23 @@ aws_secret_access_key=${newProfileData.secretAccessKey}`;
         updateProfileInFile(configFilePath, `[profile ${oldProfileName}]`, `[profile ${profileName}]`),
       ]);
       const { accountId, roles } = await initProfile(profileName);
-      event.reply('update-profile', successMessage({
+      return {
         oldProfileName,
         newProfileData: {
           profileName,
           accountId,
           roles
         }
-      }));
-    } catch (error) {
-      event.reply('update-profile', errorMessage(error));
-    }
+      };
   });
 
-  ipcMain.on('assume-role', async (event, profileData) => {
-    try {
-      const parsedData = ipcParser(profileData);
-      const profileName = `${parsedData.profileName}`;
-      const tokenSuffix = `${parsedData.tokenSuffix}`;
+  ipcMainListener('assume-role', async ({ event, data }) => {
+      const profileName = `${data.profileName}`;
+      const tokenSuffix = `${data.tokenSuffix}`;
       const sessionProfileName = `${profileName}${tokenSuffix}`;
-      const accountId = parsedData.accountId;
-      const role = parsedData.role;
-      const tokenCode = parsedData?.tokenCode;
+      const accountId = data.accountId;
+      const role = data.role;
+      const tokenCode = data?.tokenCode;
       const credentials = await getAwsCredentials(profileName);
       const config = { credentials };
       const getUser = await getUserName(config)
@@ -294,12 +272,18 @@ output = json`;
         updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
         updateProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent),
       ]);
-      event.reply('assume-role', successMessage(profileName));
       setTimer('1h', () => {
         event.reply('session-expired', successMessage(profileName))
       })
-    } catch (error) {
-      event.reply('assume-role', errorMessage(error));
-    }
+      return profileName;
+  });
+
+  ipcMainListener('default-profile', async ({ data }) => {
+    // 자격 증명 파일에서 프로파일 삭제
+    await Promise.all([
+      deleteProfileInFile(credentialsFilePath, `[${data}]`),
+      deleteProfileInFile(configFilePath, `[profile ${data}]`)
+    ]);
+    return { data };
   });
 };
