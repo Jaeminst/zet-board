@@ -277,11 +277,21 @@ aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
       const configContent = `[profile ${sessionProfileName}]
 region = ap-northeast-2
 output = json`;
-      await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
-      await Promise.all([
-        updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
-        updateProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent),
-      ]);
+
+      let fileContent = await fs.readFile(credentialsFilePath, 'utf8');
+      if (fileContent.includes(sessionProfileName)) {
+        await updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent)
+      } else {
+        await Promise.all([
+          appendProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
+          appendProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent)
+        ]);
+      }
+      if (fileContent.includes('[default]')) {
+        await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+      } else {
+        await appendProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+      }
       setTimer('1h', () => {
         event.reply('session-expired', successMessage(profileName))
       })
