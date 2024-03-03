@@ -53,13 +53,16 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (profileSession && profileSession !== 'Select Profile') {
       const profileSessions = getSessionStorageProfileSessions();
-      const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
-      if (!selectedProfile) return;
       const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
 
       // Send 'assume-role' only if there's no session or it's outdated
       if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
         renewSession();
+      } else {
+        window.electron.profile.send('default-profile', JSON.stringify({
+          profileName: profileSession,
+          tokenSuffix: `_token`,
+        }));
       }
     }
     const handleSessionExpired = (response: string) => {

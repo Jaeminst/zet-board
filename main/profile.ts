@@ -91,7 +91,8 @@ async function appendProfileInFile(filePath: string, profileName: string, conten
   let fileContent = await fs.readFile(filePath, 'utf8');
   // 프로파일 중복 검사
   if (fileContent.includes(profileName)) {
-    throw new Error('Profile already exists');
+    await updateProfileInFile(filePath, profileName, content);
+    // throw new Error('Profile already exists');
   }
   // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
   const contentToAdd = fileContent.endsWith('\n') ? content : '\n' + content;
@@ -122,7 +123,10 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
   }
 
   // 다음 프로필의 시작 위치를 찾습니다. 없다면 파일 끝으로 간주합니다.
-  let endIdx = fileContent.indexOf('\n', startIdx + newProfileData.length - 1);
+  let endIdx = fileContent.indexOf('\n', startIdx + oldProfileName.length);
+  if (newProfileData.includes('aws_access_key_id') || newProfileData.includes('aws_secret_access_key')) {
+    endIdx = fileContent.indexOf('\n', startIdx + newProfileData.length - 1);
+  }
   endIdx = endIdx !== -1 ? endIdx : fileContent.length;
 
   // 시작 위치와 끝 위치를 기준으로 파일 내용을 교체합니다.
@@ -267,8 +271,8 @@ aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
       const configContent = `[profile ${sessionProfileName}]
 region = ap-northeast-2
 output = json`;
+      await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
       await Promise.all([
-        updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent),
         updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
         updateProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent),
       ]);
@@ -279,11 +283,15 @@ output = json`;
   });
 
   ipcMainListener('default-profile', async ({ data }) => {
-    // 자격 증명 파일에서 프로파일 삭제
-    await Promise.all([
-      deleteProfileInFile(credentialsFilePath, `[${data}]`),
-      deleteProfileInFile(configFilePath, `[profile ${data}]`)
-    ]);
-    return { data };
+    const profileName = `${data.profileName}`;
+    const tokenSuffix = `${data.tokenSuffix}`;
+    const sessionProfileName = `${profileName}${tokenSuffix}`;
+    const credentials = await getAwsCredentials(sessionProfileName);
+    const defaultCredentialsContent = `[default]
+aws_access_key_id=${credentials.accessKeyId}
+aws_secret_access_key=${credentials.secretAccessKey}
+aws_session_token=${credentials.sessionToken}`;
+    await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+    return sessionProfileName;
   });
 };
