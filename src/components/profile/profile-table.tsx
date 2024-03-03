@@ -31,7 +31,10 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
       window.electron.profile.send('delete-profile', profileToDelete.profileName);
       window.electron.profile.once('delete-profile', (deleteProfileString: string) => {
         ipcParser(deleteProfileString);
-        setProfileList(profileList.filter(profile => profile.idx !== idx));
+        const filteredProfiles = profileList.filter(profile => profile.profileName !== profileToDelete.profileName);
+        const sortedProfiles = filteredProfiles.sort((a, b) => a.idx - b.idx);
+        const updatedProfileList = sortedProfiles.map((profile, index) => ({ ...profile, idx: index }));
+        setProfileList(updatedProfileList);
       });
       if (profileToDelete.profileName === profileSession) {
         setProfileSession('Select Profile');
