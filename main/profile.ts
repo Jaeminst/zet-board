@@ -91,8 +91,7 @@ async function appendProfileInFile(filePath: string, profileName: string, conten
   let fileContent = await fs.readFile(filePath, 'utf8');
   // 프로파일 중복 검사
   if (fileContent.includes(profileName)) {
-    await updateProfileInFile(filePath, profileName, content);
-    // throw new Error('Profile already exists');
+    throw new Error('Profile already exists');
   }
   // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
   const contentToAdd = fileContent.endsWith('\n') ? content : '\n' + content;
@@ -169,17 +168,24 @@ export function registerIpcProfile() {
 
   ipcMainListener('add-profile', async ({ data }) => {
       const profileName = data.profileName;
-      // 자격 증명 파일 및 설정 파일 내용 검사 및 추가
       const credentialsContent = `[${profileName}]
 aws_access_key_id=${data.accessKeyId}
 aws_secret_access_key=${data.secretAccessKey}`;
       const configContent = `[profile ${profileName}]
 region = ap-northeast-2
 output = json`;
-      await Promise.all([
-        appendProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
-        appendProfileInFile(configFilePath, `[profile ${profileName}]`, configContent)
-      ]);
+      let fileContent = await fs.readFile(credentialsFilePath, 'utf8');
+      if (fileContent.includes(profileName)) {
+        await Promise.all([
+          updateProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
+          updateProfileInFile(configFilePath, `[profile ${profileName}]`, `[profile ${profileName}]`),
+        ]);
+      } else {
+        await Promise.all([
+          appendProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
+          appendProfileInFile(configFilePath, `[profile ${profileName}]`, configContent)
+        ]);
+      }
       const { accountId, roles } = await initProfile(profileName);
       return { accountId, roles };
   });

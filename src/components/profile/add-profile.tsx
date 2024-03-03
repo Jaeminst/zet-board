@@ -34,13 +34,16 @@ export function AddProfile() {
     const profileName = newProfile.profileName;
     const accessKeyId = newProfile.accessKeyId;
     const secretAccessKey = newProfile.secretAccessKey;
-    const profile: Profile = {
-      idx: profileList.length,
-      profileName,
-      accountId: "",
-      roles: []
-    };
-    setProfileList(prevProfiles => [...prevProfiles, profile]);
+    const profileNameExists = profileList.some(profile => profile.profileName === profileName);
+    if (!profileNameExists) {
+      const profile: Profile = {
+        idx: profileList.length,
+        profileName,
+        accountId: "",
+        roles: []
+      };
+      setProfileList(prevProfiles => [...prevProfiles, profile]);
+    }
     window.electron.profile.send('add-profile', JSON.stringify({
       profileName,
       accessKeyId,
