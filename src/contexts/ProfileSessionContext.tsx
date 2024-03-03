@@ -1,6 +1,6 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect, useCallback } from 'react';
-import { getLocalStorageProfileSessions, setLocalStorageProfileSessions } from '@/lib/localStorage';
+import { getSessionStorageProfileSessions, setSessionStorageProfileSessions } from '@/lib/storage';
 import { ipcParser } from '@/lib/ipcParser';
 import { useProfile } from '@/contexts/ProfileContext';
 
@@ -16,7 +16,7 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateLocalStorageSession = useCallback((profileName: string) => {
-    let profileSessions = getLocalStorageProfileSessions();
+    let profileSessions = getSessionStorageProfileSessions();
     const nowString = new Date().toISOString();
     const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
     if (existingSession) {
@@ -28,7 +28,7 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
       // Add new session
       profileSessions.push({ profileName, createdAt: nowString });
     }
-    setLocalStorageProfileSessions(profileSessions);
+    setSessionStorageProfileSessions(profileSessions);
   }, [profileSession]);
 
   const renewSession = useCallback(async () => {
@@ -52,7 +52,7 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profileSession && profileSession !== 'Select Profile') {
-      const profileSessions = getLocalStorageProfileSessions();
+      const profileSessions = getSessionStorageProfileSessions();
       const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
       if (!selectedProfile) return;
       const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
@@ -65,7 +65,7 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
     const handleSessionExpired = (response: string) => {
       const expiredProfileSession = ipcParser(response);
       if (expiredProfileSession === profileSession) {
-        const profileSessions = getLocalStorageProfileSessions();
+        const profileSessions = getSessionStorageProfileSessions();
         const selectedProfile = profileList.find(profile => profile.profileName === expiredProfileSession);
         if (!selectedProfile) return;
         const existingSession = profileSessions.find(ps => ps.profileName === expiredProfileSession);

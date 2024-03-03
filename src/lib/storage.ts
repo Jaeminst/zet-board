@@ -10,14 +10,14 @@ export function setLocalStorageProfileList(initProfiles: Profile[]) {
   localStorage.setItem("profileList", JSON.stringify(initProfiles));
 }
 
-export function getLocalStorageProfileSessions(): ProfileSession[] {
-  const data = localStorage.getItem("profileSessions");
+export function getSessionStorageProfileSessions(): ProfileSession[] {
+  const data = sessionStorage.getItem("profileSessions");
   if (data) {
     return JSON.parse(data);
   }
   return [];
 }
 
-export function setLocalStorageProfileSessions(profileSessions: ProfileSession[]) {
-  localStorage.setItem("profileSessions", JSON.stringify(profileSessions));
+export function setSessionStorageProfileSessions(profileSessions: ProfileSession[]) {
+  sessionStorage.setItem("profileSessions", JSON.stringify(profileSessions));
 }

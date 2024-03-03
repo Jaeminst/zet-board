@@ -1,6 +1,6 @@
 'use client';
 import { ipcParser } from '@/lib/ipcParser';
-import { getLocalStorageProfileList, setLocalStorageProfileList } from '@/lib/localStorage';
+import { getLocalStorageProfileList, setLocalStorageProfileList } from '@/lib/storage';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
 
 const ProfileContext = createContext<[Profile[], Dispatch<SetStateAction<Profile[]>>] | undefined>(undefined);
