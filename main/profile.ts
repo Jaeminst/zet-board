@@ -123,8 +123,8 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
 
   // 다음 프로필의 시작 위치를 찾습니다. 없다면 파일 끝으로 간주합니다.
   let endIdx = fileContent.indexOf('\n', startIdx + oldProfileName.length);
-  if (newProfileData.includes('aws_access_key_id') || newProfileData.includes('aws_secret_access_key')) {
-    endIdx = fileContent.indexOf('\n', startIdx + newProfileData.length - 1);
+  if (newProfileData.includes('\n')) {
+    endIdx = fileContent.indexOf('\n[', startIdx + oldProfileName.length);
   }
   endIdx = endIdx !== -1 ? endIdx : fileContent.length;
 
