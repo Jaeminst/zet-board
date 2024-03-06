@@ -9,7 +9,7 @@ type EditableFieldProps = {
   onSave: (newValue: string) => void;
 };
 
-const EditableField: FunctionComponent<EditableFieldProps> = ({ label, value, onSave }) => {
+export const EditableField: FunctionComponent<EditableFieldProps> = ({ label, value, onSave }) => {
   const [isEditing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
 
@@ -78,5 +78,3 @@ const EditableField: FunctionComponent<EditableFieldProps> = ({ label, value, on
     </div>
   );
 };
-
-export default EditableField;
