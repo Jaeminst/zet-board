@@ -11,7 +11,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [profileSession] = useProfileSession();
 
   useEffect(() => {
-    // 로컬 스토리지에서 프로필 데이터를 로드
+    // 로컬 스토리지에서 데이터를 로드
     const initDatabases = getLocalStorageDatabaseList();
     if (!initDatabases[profileSession] && profileSession) {
       window.electron.database.send('init-databases', JSON.stringify({
@@ -23,7 +23,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
         setDatabaseList(initDatabases[profileSession]);
       });
     } else {
-      // 저장된 프로필 데이터로 상태 업데이트
+      // 저장된 데이터로 상태 업데이트
       setDatabaseList(initDatabases[profileSession]);
     }
   }, [profileSession]);

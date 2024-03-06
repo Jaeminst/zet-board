@@ -1,12 +1,35 @@
 'use client';
+import { Button } from '@/components/ui/button';
 import { ProfileCombo } from '@/components/profile/profile-combo';
 import DatabaseSearch from '@/components/database/database-search';
 import DatabaseTable from '@/components/database/database-table';
+import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
-import { Suspense } from 'react';
+import { useDatabase } from '@/contexts/DatabaseContext';
+import { Suspense, useCallback, useState } from 'react';
+import { Loader2, RotateCw } from 'lucide-react';
+import { getLocalStorageDatabaseList } from '@/lib/storage';
+import { ipcParser } from '@/lib/ipcParser';
 
 export default function DatabasePage() {
+  const [profileSession] = useProfileSession();
   const [databaseSearchList] = useDatabaseSearch();
+  const [databaseList, setDatabaseList] = useDatabase();
+  const [isRefresh, setIsRefresh] = useState(false);
+
+  const deleteDatabaseList = useCallback(() => {
+    setIsRefresh(true)
+    const initDatabases = getLocalStorageDatabaseList();
+    window.electron.database.send('init-databases', JSON.stringify({
+      profileName: profileSession,
+      tokenSuffix: `_token`,
+    }));
+    window.electron.database.once('init-databases', (initDatabasesString: string) => {
+      initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
+      setDatabaseList(initDatabases[profileSession]);
+      setIsRefresh(false)
+    });
+  }, [profileSession, setDatabaseList]);
 
   return (
     <div className="flex flex-col w-full">
@@ -18,6 +41,16 @@ export default function DatabasePage() {
         <Suspense fallback={<div>loading...</div>}>
           <DatabaseTable databases={databaseSearchList} />
         </Suspense>
+        {isRefresh
+        ? <Button className="mt-4 ml-auto w-9/10" disabled>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Refresh
+          </Button>
+        : <Button className="mt-4 ml-auto w-9/10" onClick={deleteDatabaseList}>
+            <RotateCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        }
       </main>
     </div>
   );
