@@ -46,6 +46,27 @@ type ExpandedClusters = {
   [key: string]: boolean;
 };
 
+// 모든 "건강한" 상태를 포함하는 배열
+const healthyStates: DatabaseStates[] = [
+  'available',
+  'backing-up',
+  'configuring-enhanced-monitoring',
+  'configuring-iam-database-auth',
+  'configuring-log-exports',
+  'converting-to-vpc',
+  'maintenance',
+  'migrating',
+  'modifying',
+  'storage-config-upgrade',
+  'storage-optimization',
+  'upgrading',
+];
+
+// 상태 검사 함수
+function isDatabaseHealthy(status: string): status is DatabaseStates {
+  return healthyStates.includes(status as DatabaseStates);
+}
+
 // 클러스터 행을 렌더링하는 컴포넌트
 const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isAllExpanded: boolean }) => {
   const [expandedClusters, setExpandedClusters] = useState<ExpandedClusters>({});
@@ -115,7 +136,10 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
           </TooltipProvider>
         </TableCell>
         <TableCell className='w-[80px] p-1 whitespace-nowrap pl-[18px]'>
-          {database.Status == 'available' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-gray-400" />}
+          {isDatabaseHealthy(database.Status)
+          ? <CheckCircle2 className="h-5 w-5 text-green-600" />
+          : <XCircle className="h-5 w-5 text-gray-400" />
+          }
         </TableCell>
         <TableCell className='w-[120px] p-1 whitespace-nowrap'>{database.Role}</TableCell>
         <TableCell className='w-[120px] p-1 whitespace-nowrap'>
@@ -192,7 +216,7 @@ const InstanceRows = ({ instances }: { instances: Database[] }) => {
           </TableCell>
           <TableCell className='w-[80px] p-1 whitespace-nowrap pl-[18px]'>
             {instance.Role !== 'Cluster-RO'
-              ? (instance.Status == 'available'
+              ? (isDatabaseHealthy(instance.Status)
                 ? <CheckCircle2 className="h-5 w-5 text-green-600" />
                 : <XCircle className="h-5 w-5 text-gray-400" />
                 )

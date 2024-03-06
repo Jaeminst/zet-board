@@ -54,3 +54,76 @@ interface DbInstanceEntity extends DatabaseSetting, DbInstance {
 }
 
 type Database = DbClusterEntity | DbInstanceEntity;
+
+type DatabaseInstanceBilledStates =
+  | "available"
+  | "backing-up"
+  | "configuring-enhanced-monitoring"
+  | "configuring-iam-database-auth"
+  | "configuring-log-exports"
+  | "converting-to-vpc"
+  | "incompatible-option-group"
+  | "incompatible-parameters"
+  | "maintenance"
+  | "modifying"
+  | "moving-to-vpc"
+  | "rebooting"
+  | "resetting-master-credentials"
+  | "renaming"
+  | "restore-error"
+  | "storage-config-upgrade"
+  | "storage-full"
+  | "storage-optimization"
+  | "upgrading";
+
+type DatabaseInstanceNotBilledStates =
+  | "creating"
+  | "delete-precheck"
+  | "deleting"
+  | "failed"
+  | "inaccessible-encryption-credentials"
+  | "incompatible-network"
+  | "incompatible-restore"
+  | "insufficient-capacity"
+
+type DatabaseInstanceBilledForStorageStates =
+  | "inaccessible-encryption-credentials-recoverable"
+  | "starting"
+  | "stopped"
+  | "stopping"
+
+type DatabaseClusterBilledStates =
+  | "available"
+  | "backing-up"
+  | "backtracking"
+  | "failing-over"
+  | "maintenance"
+  | "migrating"
+  | "modifying"
+  | "promoting"
+  | "renaming"
+  | "resetting-master-credentials"
+  | "storage-optimization"
+  | "update-iam-db-auth"
+  | "upgrading";
+
+type DatabaseClusterNotBilledStates =
+  | "cloning-failed"
+  | "creating"
+  | "deleting"
+  | "inaccessible-encryption-credentials"
+  | "migration-failed";
+
+type DatabaseClusterBilledForStorageStates =
+  | "inaccessible-encryption-credentials-recoverable"
+  | "starting"
+  | "stopped"
+  | "stopping";
+
+type DatabaseStates =
+  | DatabaseInstanceBilledStates
+  | DatabaseInstanceNotBilledStates
+  | DatabaseInstanceBilledForStorageStates
+  | DatabaseClusterBilledStates
+  | DatabaseClusterNotBilledStates
+  | DatabaseClusterBilledForStorageStates;
