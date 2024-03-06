@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-iam": "^3.521.0",
+    "@aws-sdk/client-rds": "^3.525.0",
     "@aws-sdk/credential-provider-ini": "^3.521.0",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",

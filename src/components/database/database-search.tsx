@@ -10,7 +10,7 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
   const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
 
   useEffect(() => {
-    if (!databaseSearchList.length) {
+    if (databaseList && !databaseSearchList?.length) {
       setDatabaseSearchList(databaseList);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -18,16 +18,16 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
 
   function handleSearch(value: string) {
     const search = value.toLowerCase() ?? '';
-    const filteredResult = databaseList.filter(item =>
-      item.localport.toLowerCase().includes(search)
-      || item.alias.toLowerCase().includes(search)
-      || item.identifier.toLowerCase().includes(search)
-      || item.status.toLowerCase().includes(search)
-      || item.role.toLowerCase().includes(search)
-      || item.engine.toLowerCase().includes(search)
-      || item.size.toLowerCase().includes(search)
+    const filteredResult = databaseList.filter((item: Database) =>
+      item.Identifier.toLowerCase().includes(search)
+      || item.Status.toLowerCase().includes(search)
+      || item.Role.toLowerCase().includes(search)
+      || item.Engine.toLowerCase().includes(search)
+      || item.Size.toString().toLowerCase().includes(search)
+      || item.localport && item.localport.toLowerCase().includes(search)
+      || item.alias && item.alias.toLowerCase().includes(search)
     );
-    const searchDatabases = filteredResult as DatabaseList[];
+    const searchDatabases = filteredResult as Database[];
     value !== '' ? setDatabaseSearchList(searchDatabases) : setDatabaseSearchList(databaseList)
   }
 

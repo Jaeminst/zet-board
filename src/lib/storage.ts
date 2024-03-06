@@ -21,3 +21,27 @@ export function getSessionStorageProfileSessions(): ProfileSession[] {
 export function setSessionStorageProfileSessions(profileSessions: ProfileSession[]) {
   sessionStorage.setItem("profileSessions", JSON.stringify(profileSessions));
 }
+
+export function getLocalStorageDatabaseList(): Databases {
+  const data = localStorage.getItem("databaseList");
+  if (data) {
+    return JSON.parse(data);
+  }
+  return {};
+}
+
+export function setLocalStorageDatabaseList(initDatabases: Databases) {
+  localStorage.setItem("databaseList", JSON.stringify(initDatabases));
+}
+
+export function getLocalStorageDatabaseSettings(): DatabaseSettings {
+  const data = localStorage.getItem("databaseSettings");
+  if (data) {
+    return JSON.parse(data);
+  }
+  return {};
+}
+
+export function setLocalStorageDatabaseSettings(initDatabases: DatabaseSettings) {
+  localStorage.setItem("databaseSettings", JSON.stringify(initDatabases));
+}

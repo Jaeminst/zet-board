@@ -4,6 +4,7 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import serve from 'electron-serve';
 import { registerIpcProfile } from "./profile";
+import { registerIpcDatabase } from "./database";
 
 const isDev = process.env.NODE_ENV === "development";
 const port = 3000;
@@ -135,3 +136,4 @@ app
 
 // 시작시 프로파일 dev, qa, stage, prod 중 있는것 반환
 registerIpcProfile();
+registerIpcDatabase();

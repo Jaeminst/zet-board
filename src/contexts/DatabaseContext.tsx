@@ -1,44 +1,40 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
 import { useProfileSession } from './ProfileSessionContext';
+import { getLocalStorageDatabaseList, setLocalStorageDatabaseList } from '@/lib/storage';
+import { ipcParser } from '@/lib/ipcParser';
 
-const result: DatabaseList[] = [{
-  idx: 0,
-  tunneling: false,
-  localport: "13071",
-  alias: "식봄",
-  identifier: "marketboro-aurora2-dev",
-  endpoint: "marketboro-aurora2-dev.abcdef123456.ap-northeast-2.rds.amazonaws.com",
-  status: "used",
-  role: "Writer instance",
-  engine: "Aurora MySQL",
-  size: "db.t4g.medium",
-},{
-  idx: 1,
-  tunneling: false,
-  localport: "13072",
-  alias: "마켓봄",
-  identifier: "marketboro-aurora2-dev",
-  endpoint: "marketboro-aurora2-dev.abcdef123456.ap-northeast-2.rds.amazonaws.com",
-  status: "used",
-  role: "Writer instance",
-  engine: "Aurora MySQL",
-  size: "db.t4g.medium",
-}];
-
-const DatabaseContext = createContext<[DatabaseList[], Dispatch<SetStateAction<DatabaseList[]>>] | undefined>(undefined);
+const DatabaseContext = createContext<[Database[], Dispatch<SetStateAction<Database[]>>] | undefined>(undefined);
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
-  const [databaseList, setDatabaseList] = useState<DatabaseList[]>([]);
+  const [databaseList, setDatabaseList] = useState<Database[]>([]);
   const [profileSession] = useProfileSession();
 
   useEffect(() => {
-    const localStorageDatabaseSetting = localStorage.getItem(`databaseSetting_${profileSession}`);
-    const localStorageDatabaseList = localStorage.getItem(`databaseList_${profileSession}`);
-    const jsonLocalStorageDatabaseSetting = JSON.parse(localStorageDatabaseSetting || '[]')
-    const jsonLocalStorageDatabaseList = JSON.parse(localStorageDatabaseList || '[]')
-    setDatabaseList(jsonLocalStorageDatabaseList.length > 0 ? jsonLocalStorageDatabaseList : [...result])
+    // 로컬 스토리지에서 프로필 데이터를 로드
+    const initDatabases = getLocalStorageDatabaseList();
+    if (!initDatabases[profileSession] && profileSession) {
+      window.electron.database.send('init-databases', JSON.stringify({
+        profileName: profileSession,
+        tokenSuffix: `_token`,
+      }));
+      window.electron.database.once('init-databases', (initDatabasesString: string) => {
+        initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
+        setDatabaseList(initDatabases[profileSession]);
+      });
+    } else {
+      // 저장된 프로필 데이터로 상태 업데이트
+      setDatabaseList(initDatabases[profileSession]);
+    }
   }, [profileSession]);
+
+  useEffect(() => {
+    const databases = getLocalStorageDatabaseList();
+    if (databaseList && profileSession) {
+      databases[profileSession] = databaseList
+      setLocalStorageDatabaseList(databases);
+    }
+  }, [databaseList, profileSession]);
 
   return (
     <DatabaseContext.Provider value={[databaseList, setDatabaseList]}>

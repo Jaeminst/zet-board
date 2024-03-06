@@ -1,10 +1,10 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
 
-const DatabaseSearchContext = createContext<[DatabaseList[], Dispatch<SetStateAction<DatabaseList[]>>] | undefined>(undefined);
+const DatabaseSearchContext = createContext<[Database[], Dispatch<SetStateAction<Database[]>>] | undefined>(undefined);
 
 export function DatabaseSearchProvider({ children }: { children: ReactNode }) {
-  const [databaseSearchList, setDatabaseSearchList] = useState<DatabaseList[]>([]);
+  const [databaseSearchList, setDatabaseSearchList] = useState<Database[]>([]);
 
   return (
     <DatabaseSearchContext.Provider value={[databaseSearchList, setDatabaseSearchList]}>

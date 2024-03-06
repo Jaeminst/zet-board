@@ -1,5 +1,6 @@
 'use client';
 import { DatabaseProvider } from '@/contexts/DatabaseContext';
+import { DatabaseSettingProvider } from '@/contexts/DatabaseSettingContext';
 import { DatabaseSearchProvider } from '@/contexts/DatabaseSearchContext';
 
 export default function RootLayout({
@@ -9,9 +10,11 @@ export default function RootLayout({
 }) {
   return (
     <DatabaseProvider>
-      <DatabaseSearchProvider>
-        {children}
-      </DatabaseSearchProvider>
+      <DatabaseSettingProvider>
+        <DatabaseSearchProvider>
+          {children}
+        </DatabaseSearchProvider>
+      </DatabaseSettingProvider>
     </DatabaseProvider>
   );
 }
