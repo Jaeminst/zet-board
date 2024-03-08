@@ -5,6 +5,7 @@ import ProfileTable from '@/components/profile/profile-table';
 import { AddProfile } from '@/components/profile/add-profile';
 import { ProfileCombo } from '@/components/profile/profile-combo';
 import { useProfileSearch } from '@/contexts/ProfileSearchContext';
+import { IsLoadingTable } from '@/components/status/isLoadingTable';
 
 export default function IndexPage() {
   const [profileSearchList] = useProfileSearch();
@@ -17,7 +18,9 @@ export default function IndexPage() {
           <ProfileSearch />
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
-          <ProfileTable profiles={profileSearchList} />
+          <Suspense fallback={<IsLoadingTable />}>
+            <ProfileTable profiles={profileSearchList} />
+          </Suspense>
           <AddProfile />
         </main>
       </div>

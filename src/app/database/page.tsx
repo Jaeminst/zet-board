@@ -10,6 +10,7 @@ import { Suspense, useCallback, useState } from 'react';
 import { Loader2, RotateCw } from 'lucide-react';
 import { getLocalStorageDatabaseList } from '@/lib/storage';
 import { ipcParser } from '@/lib/ipcParser';
+import { IsLoadingTable } from '@/components/status/isLoadingTable';
 
 export default function DatabasePage() {
   const [profileSession] = useProfileSession();
@@ -17,7 +18,7 @@ export default function DatabasePage() {
   const [databaseList, setDatabaseList] = useDatabase();
   const [isRefresh, setIsRefresh] = useState(false);
 
-  const deleteDatabaseList = useCallback(() => {
+  const refreshDatabaseList = useCallback(() => {
     setIsRefresh(true)
     const initDatabases = getLocalStorageDatabaseList();
     window.electron.database.send('init-databases', JSON.stringify({
@@ -38,7 +39,7 @@ export default function DatabasePage() {
         <DatabaseSearch />
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
-        <Suspense fallback={<div>loading...</div>}>
+        <Suspense fallback={<IsLoadingTable />}>
           <DatabaseTable databases={databaseSearchList} />
         </Suspense>
         {isRefresh
@@ -46,7 +47,7 @@ export default function DatabasePage() {
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Refresh
           </Button>
-        : <Button className="mt-4 ml-auto w-9/10" onClick={deleteDatabaseList}>
+        : <Button className="mt-4 ml-auto w-9/10" onClick={refreshDatabaseList}>
             <RotateCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>

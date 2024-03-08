@@ -1,7 +1,7 @@
 'use client';
-import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ProfileCombo } from "@/components/profile/profile-combo";
 import Search from "@/components/Search";
+import { ProfileCombo } from "@/components/profile/profile-combo";
+import { IsLoadingTable } from "./isLoadingTable";
 
 export function IsLoading() {
   return (
@@ -11,13 +11,7 @@ export function IsLoading() {
         <Search />
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
-        <Table className="border shadow-sm rounded-lg p-2">
-          <TableHeader>
-            <TableRow>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-        </Table>
+        <IsLoadingTable />
       </main>
     </div>
   )
