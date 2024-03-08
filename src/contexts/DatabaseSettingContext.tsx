@@ -16,8 +16,10 @@ export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const databaseSettings = getLocalStorageDatabaseSettings();
-    databaseSettings[profileSession] = databaseSettingList
-    setLocalStorageDatabaseSettings(databaseSettings);
+    if (databaseSettingList && profileSession) {
+      databaseSettings[profileSession] = databaseSettingList
+      setLocalStorageDatabaseSettings(databaseSettings);
+    }
   }, [databaseSettingList, profileSession]);
 
   return (
