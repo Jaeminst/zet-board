@@ -1,9 +1,12 @@
+interface Endpoint {
+  Address: string;
+  Port: number;
+  HostedZoneId?: string;
+}
+
 interface DbCluster {
   Identifier: string;
-  Endpoint: {
-    Address: string;
-    Port: number;
-  };
+  Endpoint: Endpoint;
   ReaderEndpoint: string;
   Status: string;
   Engine: string;
@@ -15,11 +18,7 @@ interface DbCluster {
 
 interface DbInstance {
   Identifier: string;
-  Endpoint: {
-    Address: string;
-    Port: number;
-    HostedZoneId: string;
-  };
+  Endpoint: Endpoint;
   Status: string;
   Engine: string;
   EngineVersion: string;
@@ -38,7 +37,7 @@ interface Databases {
 interface DatabaseSetting {
   alias?: string;
   localport?: string;
-  identifier?: string;
+  endpoint?: Endpoint;
 }
 
 interface DatabaseSettings {
