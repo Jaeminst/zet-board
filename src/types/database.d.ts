@@ -11,7 +11,7 @@ interface DbCluster {
   Status: string;
   Engine: string;
   EngineVersion: string;
-  Size: number;
+  Size: string;
   Role: "Cluster" | "Cluster-RO";
   Instances: DbInstance[];
 }
@@ -25,10 +25,9 @@ interface DbInstance {
   Size: string;
   DBClusterIdentifier?: string;
   Role: "Instance" | "Writer Instance" | "Reader Instance";
-  Instances?: [];
 }
 
-type DbEntity = DbCluster | DbInstance;
+type Database = DbCluster | DbInstance;
 
 interface Databases {
   [profileName: string]: Database[];
@@ -44,20 +43,6 @@ interface DatabaseSetting {
 interface DatabaseSettings {
   [profileName: string]: DatabaseSetting;
 }
-
-interface DbClusterEntity extends DbCluster {
-  tunneling?: boolean;
-  alias?: string;
-  localport?: string;
-}
-
-interface DbInstanceEntity extends DbInstance {
-  tunneling?: boolean;
-  alias?: string;
-  localport?: string;
-}
-
-type Database = DbClusterEntity | DbInstanceEntity;
 
 type DatabaseInstanceBilledStates =
   | "available"
