@@ -46,6 +46,9 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
       const updatedProfileSession = ipcParser(response);
       if (updatedProfileSession) {
         updateLocalStorageSession(updatedProfileSession)
+      } else {
+        localStorage.setItem('profileSession', 'Select Profile');
+        setProfileSession('Select Profile');
       }
     });
   }, [profileList, profileSession, updateLocalStorageSession]); // 필요한 의존성 명시

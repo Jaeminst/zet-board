@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 
 import { cn } from '@/lib/utils'
@@ -19,6 +20,7 @@ import { useProfileSession } from '@/contexts/ProfileSessionContext'
 import { toast } from 'sonner'
 
 export function ProfileCombo() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [profileList] = useProfile();
   const [profileSession, setProfileSession] = useProfileSession();
@@ -35,6 +37,12 @@ export function ProfileCombo() {
       setProfileSession('Select Profile');
     }
   };
+
+  useEffect(() => {
+    if (profileSession == 'Select Profile') {
+      router.push('/')
+    }
+  }, [profileSession, router])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
