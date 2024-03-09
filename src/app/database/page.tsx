@@ -1,20 +1,22 @@
 'use client';
-import dynamic from 'next/dynamic'
-import { Button } from '@/components/ui/button';
-import { ProfileCombo } from '@/components/profile/profile-combo';
-import DatabaseSearch from '@/components/database/database-search';
-const DatabaseTable = dynamic(() => import('@/components/database/database-table'), {
-  loading: () => <IsLoadingTable />,
-  ssr: false
-});
-import { useProfileSession } from '@/contexts/ProfileSessionContext';
-import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
-import { useDatabase } from '@/contexts/DatabaseContext';
 import { useCallback, useState } from 'react';
 import { Loader2, RotateCw } from 'lucide-react';
 import { getLocalStorageDatabaseList } from '@/lib/storage';
 import { ipcParser } from '@/lib/ipcParser';
+import { Button } from '@/components/ui/button';
+import { ProfileCombo } from '@/components/profile/profile-combo';
 import { IsLoadingTable } from '@/components/status/isLoadingTable';
+import { useDatabase } from '@/contexts/DatabaseContext';
+import { useProfileSession } from '@/contexts/ProfileSessionContext';
+import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
+import dynamic from 'next/dynamic'
+const DatabaseSearch = dynamic(() => import('@/components/database/database-search'), {
+  ssr: false,
+});
+const DatabaseTable = dynamic(() => import('@/components/database/database-table'), {
+  loading: () => <IsLoadingTable />,
+  ssr: false,
+});
 
 export default function DatabasePage() {
   const [profileSession] = useProfileSession();
