@@ -29,7 +29,7 @@ export function ProfileCombo() {
       setProfileSession(profileName);
       localStorage.setItem('profileSession', profileName);
     } else {
-      toast(`${profileName} 역할이 선택되지 않았습니다.`, {
+      toast.error(`${profileName} 역할이 선택되지 않았습니다.`, {
         description: `Select Role: ${selectRole}`,
         duration: 5000
       });

@@ -31,7 +31,7 @@ export function Navbar() {
                 onClick={() => {
                   localStorage.getItem('profileSession') !== 'Select Profile'
                   ? router.push('/database')
-                  : toast.error('Select Profile', { icon: <ShieldX />})
+                  : toast.error('Select Profile')
                 }}
               >
                 <DatabaseIcon className="h-4 w-4" />
