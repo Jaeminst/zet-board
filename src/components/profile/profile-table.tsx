@@ -72,7 +72,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
     <Table className="border shadow-sm rounded-lg p-2">
       <TableHeader>
         <TableRow>
-          <TableHead className="w-40">Profile</TableHead>
+          <TableHead className="w-40 h-[49px]">Profile</TableHead>
           <TableHead className="w-64 pl-8" >Role</TableHead>
           <TableHead className="w-64 pl-6">Account ID</TableHead>
           <TableHead className="w-1 text-center">Actions</TableHead>
