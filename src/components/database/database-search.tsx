@@ -1,12 +1,14 @@
 'use client';
 import { Input } from '@/components/ui/input';
 import { useDatabase } from '@/contexts/DatabaseContext';
+import { useDatabaseSetting } from '@/contexts/DatabaseSettingContext';
 import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
 import { SearchIcon } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
   const [databaseList] = useDatabase();
+  const [databaseSettingList] = useDatabaseSetting();
   const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
 
   useEffect(() => {
@@ -16,18 +18,46 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
   }, [databaseList, setDatabaseSearchList]);
 
   function handleSearch(value: string) {
-    const search = value.toLowerCase() ?? '';
-    const filteredResult = databaseList.filter((item: Database) =>
-      item.Identifier.toLowerCase().includes(search)
-      || item.Status.toLowerCase().includes(search)
-      || item.Role.toLowerCase().includes(search)
-      || item.Engine.toLowerCase().includes(search)
-      || item.Size.toString().toLowerCase().includes(search)
-      || item.alias && item.alias.toLowerCase().includes(search)
-      || item.localport && item.localport.toLowerCase().includes(search)
-    );
-    const searchDatabases = filteredResult as Database[];
-    value !== '' ? setDatabaseSearchList(searchDatabases) : setDatabaseSearchList(databaseList)
+    const search = value.toLowerCase();
+    const filteredResult: Database[] = databaseList.flatMap(db => {
+      // 기존 속성 검사
+      const matchInDb = db.Identifier.toLowerCase().includes(search) ||
+        db.Status.toLowerCase().includes(search) ||
+        db.Engine.toLowerCase().includes(search) ||
+        db.Size.toString().toLowerCase().includes(search);
+
+      const settingsMatch = db.Endpoint.Address && databaseSettingList[db.Endpoint.Address] &&
+        (databaseSettingList[db.Endpoint.Address].alias?.toLowerCase().includes(search) ||
+        databaseSettingList[db.Endpoint.Address].localport?.toLowerCase().includes(search));
+
+      if (matchInDb || settingsMatch) {
+        return [db];
+      }
+      // DbCluster 타입일 때만 Instances 필터링 수행
+      if ('Instances' in db && 'ReaderEndpoint' in db) { // db가 DbCluster 타입임을 확인
+        const matchedInstances = db.Instances.filter(instance => {
+          const instanceMatch = instance.Identifier.toLowerCase().includes(search) ||
+            instance.Engine.toLowerCase().includes(search) ||
+            instance.Size.toString().toLowerCase().includes(search);
+  
+          const instanceSettingsMatch = instance.Endpoint.Address && databaseSettingList[instance.Endpoint.Address] &&
+            (databaseSettingList[instance.Endpoint.Address].alias?.toLowerCase().includes(search) ||
+            databaseSettingList[instance.Endpoint.Address].localport?.toLowerCase().includes(search));
+  
+          return instanceMatch || instanceSettingsMatch;
+        });
+        if (matchedInstances.length > 0) {
+          // 모든 필수 속성을 포함하여 새 DbCluster 객체 생성
+          const modifiedDb: DbCluster = {
+            ...db,
+            Instances: matchedInstances
+          };
+          return [modifiedDb];
+        }
+      }
+      return [];
+    });
+    setDatabaseSearchList(filteredResult);
   }
 
   return (
