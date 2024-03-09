@@ -3,10 +3,10 @@ import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContex
 import { getLocalStorageDatabaseSettings, setLocalStorageDatabaseSettings } from '@/lib/storage';
 import { useProfileSession } from './ProfileSessionContext';
 
-const DatabaseSettingContext = createContext<[DatabaseSetting[], Dispatch<SetStateAction<DatabaseSetting[]>>] | undefined>(undefined);
+const DatabaseSettingContext = createContext<[DatabaseSetting, Dispatch<SetStateAction<DatabaseSetting>>] | undefined>(undefined);
 
 export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
-  const [databaseSettingList, setDatabaseSettingList] = useState<DatabaseSetting[]>([]);
+  const [databaseSettingList, setDatabaseSettingList] = useState<DatabaseSetting>({});
   const [profileSession] = useProfileSession();
 
   useEffect(() => {

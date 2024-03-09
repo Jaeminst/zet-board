@@ -10,11 +10,10 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
   const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
 
   useEffect(() => {
-    if (databaseList && !databaseSearchList?.length) {
+    if (databaseList) {
       setDatabaseSearchList(databaseList);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [databaseList]);
+  }, [databaseList, setDatabaseSearchList]);
 
   function handleSearch(value: string) {
     const search = value.toLowerCase() ?? '';
@@ -24,8 +23,8 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
       || item.Role.toLowerCase().includes(search)
       || item.Engine.toLowerCase().includes(search)
       || item.Size.toString().toLowerCase().includes(search)
-      || item.localport && item.localport.toLowerCase().includes(search)
       || item.alias && item.alias.toLowerCase().includes(search)
+      || item.localport && item.localport.toLowerCase().includes(search)
     );
     const searchDatabases = filteredResult as Database[];
     value !== '' ? setDatabaseSearchList(searchDatabases) : setDatabaseSearchList(databaseList)

@@ -1,36 +1,13 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { copyToClipboard } from '@/lib/clipboard';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { EditableField } from '@/components/ui/editable-field';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useProfileSession } from '@/contexts/ProfileSessionContext';
-import { useDatabase } from '@/contexts/DatabaseContext';
-import { useDatabaseSetting } from '@/contexts/DatabaseSettingContext';
-import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
-import React from 'react';
 import { PlusSquare, MinusSquare, CheckCircle2, XCircle } from 'lucide-react';
-
-const dummySettings = [
-  {
-    tunneling: false,
-    alias: "",
-    localport: 0,
-    identifier: "string",
-  }
-]
-
-const updateDatabaseField = (identifier: string, field: keyof DatabaseSetting, value: string) => {
-  // const updatedList = databaseList.map((database) => {
-  //   if (database.identifier === identifier) {
-  //     return { ...database, [field]: value };
-  //   }
-  //   return database;
-  // });
-  // setDatabaseList(updatedList);
-};
+import { useDatabaseSetting } from '@/contexts/DatabaseSettingContext';
 
 const toggleSwitch = (identifier: string) => {
   // const updatedList = databaseList.map(database => {
@@ -70,6 +47,19 @@ function isDatabaseHealthy(status: string): status is DatabaseStates {
 // 클러스터 행을 렌더링하는 컴포넌트
 const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isAllExpanded: boolean }) => {
   const [expandedClusters, setExpandedClusters] = useState<ExpandedClusters>({});
+  const [databaseSettingList, setDatabaseSettingList] = useDatabaseSetting();
+
+  const updateDatabaseField = useCallback((endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string) => {
+    if (!endpoint.Address) {
+      return;
+    }
+    const updatedSettings = { ...databaseSettingList };
+    if (!updatedSettings[endpoint.Address]) {
+      updatedSettings[endpoint.Address] = {};
+    }
+    updatedSettings[endpoint.Address][field] = value;
+    setDatabaseSettingList(updatedSettings);
+  }, [databaseSettingList, setDatabaseSettingList]);
 
   const toggleExpand = (identifier: string) => {
     setExpandedClusters(exp => ({
@@ -104,15 +94,15 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
         <TableCell className='w-[80px] p-1'>
           <EditableField
             label="Alias"
-            value={"alias"}
-            onSave={(newValue) => updateDatabaseField(database.Identifier, 'alias', newValue)}
+            value={database.Endpoint.Address ? databaseSettingList?.[database.Endpoint.Address]?.alias ?? '' : ''}
+            onSave={(newValue) => updateDatabaseField(database.Endpoint, 'alias', newValue)}
           />
         </TableCell>
         <TableCell className='w-[80px] p-1'>
           <EditableField
             label="LocalPort"
-            value={"localport"}
-            onSave={(newValue) => updateDatabaseField(database.Identifier, 'localport', newValue)}
+            value={database.Endpoint.Address ? databaseSettingList?.[database.Endpoint.Address]?.localport ?? '' : ''}
+            onSave={(newValue) => updateDatabaseField(database.Endpoint, 'localport', newValue)}
           />
         </TableCell>
         <TableCell className='w-[250px] p-1'>
@@ -136,10 +126,19 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
           </TooltipProvider>
         </TableCell>
         <TableCell className='w-[80px] p-1 whitespace-nowrap pl-[18px]'>
-          {isDatabaseHealthy(database.Status)
-          ? <CheckCircle2 className="h-5 w-5 text-green-600" />
-          : <XCircle className="h-5 w-5 text-gray-400" />
-          }
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {isDatabaseHealthy(database.Status)
+                ? <CheckCircle2 className="h-5 w-5 text-green-600" />
+                : <XCircle className="h-5 w-5 text-gray-400" />
+                }
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{database.Status}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </TableCell>
         <TableCell className='w-[120px] p-1 whitespace-nowrap'>{database.Role}</TableCell>
         <TableCell className='w-[120px] p-1 whitespace-nowrap'>
@@ -162,14 +161,19 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
         </TableCell>
       </TableRow>
       {database.Role == 'Cluster' && expandedClusters[database.Identifier] && (
-        <InstanceRows instances={database.Instances} />
+        <InstanceRows
+          instances={database.Instances}
+          updateDatabaseField={updateDatabaseField}
+        />
       )}
     </>
   );
 };
 
 // 클러스터와 연결된 인스턴스들을 렌더링하는 컴포넌트
-const InstanceRows = ({ instances }: { instances: Database[] }) => {
+const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[], updateDatabaseField: (endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string) => void }) => {
+  const [databaseSettingList] = useDatabaseSetting();
+
   return (
     <>
       {instances.map(instance => (
@@ -190,8 +194,8 @@ const InstanceRows = ({ instances }: { instances: Database[] }) => {
           <TableCell className='w-[80px] p-1'>
             <EditableField
               label="LocalPort"
-              value={"localport"}
-              onSave={(newValue) => updateDatabaseField(instance.Identifier, 'localport', newValue)}
+              value={instance.Endpoint.Address ? databaseSettingList?.[instance.Endpoint.Address]?.localport ?? '' : ''}
+              onSave={(newValue) => updateDatabaseField(instance.Endpoint, 'localport', newValue)}
             />
           </TableCell>
           <TableCell className='w-[250px] p-1'>
@@ -215,13 +219,22 @@ const InstanceRows = ({ instances }: { instances: Database[] }) => {
             </TooltipProvider>
           </TableCell>
           <TableCell className='w-[80px] p-1 whitespace-nowrap pl-[18px]'>
-            {instance.Role !== 'Cluster-RO'
-              ? (isDatabaseHealthy(instance.Status)
-                ? <CheckCircle2 className="h-5 w-5 text-green-600" />
-                : <XCircle className="h-5 w-5 text-gray-400" />
-                )
-              : <></>
-            }
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {instance.Role !== 'Cluster-RO'
+                    ? (isDatabaseHealthy(instance.Status)
+                      ? <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      : <XCircle className="h-5 w-5 text-gray-400" />
+                      )
+                    : <></>
+                  }
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{instance.Status}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </TableCell>
           <TableCell className='w-[120px] p-1 whitespace-nowrap'>{instance.Role}</TableCell>
           <TableCell className='w-[120px] p-1 whitespace-nowrap'>
@@ -244,23 +257,11 @@ const InstanceRows = ({ instances }: { instances: Database[] }) => {
 };
 
 export default function DatabaseTable({ databases }: { databases: Database[] }) {
-  const [databaseList, setDatabaseList] = useDatabase();
-  const [databaseSettingList, setDatabaseSettingList] = useDatabaseSetting();
-  const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
-  const [profileSession] = useProfileSession();
   const [isAllExpanded, setIsAllExpanded] = useState(false);
 
   const toggleAllClusters = () => {
     setIsAllExpanded(!isAllExpanded);
   };
-
-  // tunneling: boolean;
-  // alias: string,
-  // localport: string;
-  // identifier: string;
-  useEffect(() => {
-    setDatabaseSearchList(databaseList);
-  }, [databaseList, setDatabaseSearchList]);
 
   return (
     <Table className='border shadow-sm rounded-lg p-6'>

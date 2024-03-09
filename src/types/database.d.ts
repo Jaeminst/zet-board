@@ -31,25 +31,30 @@ interface DbInstance {
 type DbEntity = DbCluster | DbInstance;
 
 interface Databases {
-  [key: string]: Database[];
+  [profileName: string]: Database[];
 }
 
 interface DatabaseSetting {
-  alias?: string;
-  localport?: string;
-  endpoint?: Endpoint;
+  [address: string]: {
+    alias?: string;
+    localport?: string;
+  };
 }
 
 interface DatabaseSettings {
-  [key: string]: DatabaseSetting[];
+  [profileName: string]: DatabaseSetting;
 }
 
-interface DbClusterEntity extends DatabaseSetting, DbCluster {
+interface DbClusterEntity extends DbCluster {
   tunneling?: boolean;
+  alias?: string;
+  localport?: string;
 }
 
-interface DbInstanceEntity extends DatabaseSetting, DbInstance {
+interface DbInstanceEntity extends DbInstance {
   tunneling?: boolean;
+  alias?: string;
+  localport?: string;
 }
 
 type Database = DbClusterEntity | DbInstanceEntity;
