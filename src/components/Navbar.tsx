@@ -18,16 +18,17 @@ export function Navbar() {
           </div>
           <div className="flex-1">
             <nav className="grid items-start px-4 text-sm font-medium">
-              <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-                href="/"
+              <Button
+                variant='link'
+                className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                onClick={() => router.push('/')}
               >
                 <UserIcon className="h-4 w-4" />
                 Profile
-              </Link>
+              </Button>
               <Button
                 variant='link'
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
                 onClick={() => {
                   localStorage.getItem('profileSession') !== 'Select Profile'
                   ? router.push('/database')
@@ -37,13 +38,14 @@ export function Navbar() {
                 <DatabaseIcon className="h-4 w-4" />
                 Database
               </Button>
-              <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-                href="#"
+              <Button
+                variant='link'
+                className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                onClick={() => router.push('/loading')}
               >
                 <SettingsIcon className="h-4 w-4" />
                 Settings
-              </Link>
+              </Button>
             </nav>
           </div>
         </div>
