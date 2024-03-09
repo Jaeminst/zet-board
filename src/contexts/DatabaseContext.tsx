@@ -11,7 +11,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [profileSession] = useProfileSession();
 
   useEffect(() => {
-    if (profileSession !== 'Select Profile') {
+    if (profileSession !== '' && profileSession !== 'Select Profile') {
       // 로컬 스토리지에서 데이터를 로드
       const initDatabases = getLocalStorageDatabaseList();
       if (!initDatabases[profileSession]) {
@@ -31,7 +31,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   }, [profileSession]);
 
   useEffect(() => {
-    if (databaseList && profileSession !== 'Select Profile') {
+    if (databaseList && profileSession !== '' && profileSession !== 'Select Profile') {
       const databases = getLocalStorageDatabaseList();
       databases[profileSession] = databaseList
       setLocalStorageDatabaseList(databases);

@@ -10,12 +10,14 @@ export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
   const [profileSession] = useProfileSession();
 
   useEffect(() => {
-    const databaseSettings = getLocalStorageDatabaseSettings();
-    setDatabaseSettingList(databaseSettings[profileSession]);
+    if (profileSession !== '' && profileSession !== 'Select Profile') {
+      const databaseSettings = getLocalStorageDatabaseSettings();
+      setDatabaseSettingList(databaseSettings[profileSession]);
+    }
   }, [profileSession]);
 
   useEffect(() => {
-    if (databaseSettingList && profileSession !== 'Select Profile') {
+    if (databaseSettingList && profileSession !== '' && profileSession !== 'Select Profile') {
       const databaseSettings = getLocalStorageDatabaseSettings();
       databaseSettings[profileSession] = databaseSettingList
       setLocalStorageDatabaseSettings(databaseSettings);

@@ -51,10 +51,10 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
         setProfileSession('Select Profile');
       }
     });
-  }, [profileList, profileSession, updateLocalStorageSession]); // 필요한 의존성 명시
+  }, [profileList, profileSession, updateLocalStorageSession]);
 
   useEffect(() => {
-    if (profileSession && profileSession !== 'Select Profile') {
+    if (profileSession && profileSession !== '' && profileSession !== 'Select Profile') {
       const profileSessions = getSessionStorageProfileSessions();
       const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
 
@@ -67,25 +67,25 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
           tokenSuffix: `_token`,
         }));
       }
-    }
-    const handleSessionExpired = (response: string) => {
-      const expiredProfileSession = ipcParser(response);
-      if (expiredProfileSession === profileSession) {
-        const profileSessions = getSessionStorageProfileSessions();
-        const selectedProfile = profileList.find(profile => profile.profileName === expiredProfileSession);
-        if (!selectedProfile) return;
-        const existingSession = profileSessions.find(ps => ps.profileName === expiredProfileSession);
-        // Send 'assume-role' only if there's no session or it's outdated
-        if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
-          renewSession();
+      const handleSessionExpired = (response: string) => {
+        const expiredProfileSession = ipcParser(response);
+        if (expiredProfileSession === profileSession) {
+          const profileSessions = getSessionStorageProfileSessions();
+          const selectedProfile = profileList.find(profile => profile.profileName === expiredProfileSession);
+          if (!selectedProfile) return;
+          const existingSession = profileSessions.find(ps => ps.profileName === expiredProfileSession);
+          // Send 'assume-role' only if there's no session or it's outdated
+          if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
+            renewSession();
+          }
         }
-      }
-    };
-    window.electron.profile.on('session-expired', handleSessionExpired);
-    return () => {
-      // Clean up the effect when component unmounts or updates
-      window.electron.profile.removeAllListeners('session-expired');
-    };
+      };
+      window.electron.profile.on('session-expired', handleSessionExpired);
+      return () => {
+        // Clean up the effect when component unmounts or updates
+        window.electron.profile.removeAllListeners('session-expired');
+      };
+    }
   }, [profileList, profileSession, renewSession]);
 
   return (
