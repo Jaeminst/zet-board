@@ -1,7 +1,7 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
 import { useProfileSession } from './ProfileSessionContext';
-import { getLocalStorageDatabaseList, setLocalStorageDatabaseList } from '@/lib/storage';
+import IpcRenderer from '@/lib/ipcRenderer';
 import { ipcParser } from '@/lib/ipcParser';
 
 const DatabaseContext = createContext<[Database[], Dispatch<SetStateAction<Database[]>>] | undefined>(undefined);
@@ -12,29 +12,29 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profileSession !== '' && profileSession !== 'Select Profile') {
-      // 로컬 스토리지에서 데이터를 로드
-      const initDatabases = getLocalStorageDatabaseList();
-      if (!initDatabases[profileSession]) {
-        window.electron.database.send('init-databases', JSON.stringify({
-          profileName: profileSession,
-          tokenSuffix: `_token`,
-        }));
-        window.electron.database.once('init-databases', (initDatabasesString: string) => {
-          initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
+      IpcRenderer.getDatabaseList((initDatabases) => {
+        if (!initDatabases[profileSession]) {
+          window.electron.database.send('init-databases', JSON.stringify({
+            profileName: profileSession,
+            tokenSuffix: `_token`,
+          }));
+          window.electron.database.once('init-databases', (initDatabasesString: string) => {
+            initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
+            setDatabaseList(initDatabases[profileSession]);
+          });
+        } else {
           setDatabaseList(initDatabases[profileSession]);
-        });
-      } else {
-        // 저장된 데이터로 상태 업데이트
-        setDatabaseList(initDatabases[profileSession]);
-      }
+        }
+      });
     }
   }, [profileSession]);
 
   useEffect(() => {
     if (databaseList && profileSession !== '' && profileSession !== 'Select Profile') {
-      const databases = getLocalStorageDatabaseList();
-      databases[profileSession] = databaseList
-      setLocalStorageDatabaseList(databases);
+      IpcRenderer.getDatabaseList((databases) => {
+        databases[profileSession] = databaseList
+        IpcRenderer.setDatabaseList(databases);
+      });
     }
   }, [databaseList, profileSession]);
 

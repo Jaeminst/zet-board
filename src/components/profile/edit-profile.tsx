@@ -6,8 +6,8 @@ import { FileEditIcon } from "lucide-react"
 import { useProfile } from '@/contexts/ProfileContext';
 import { useForm } from 'react-hook-form'
 import { useCallback, useEffect, useState } from "react";
-import { ipcParser } from "@/lib/ipcParser";
 import { ProfileActionTypes } from "@/types/actions";
+import IpcRenderer from "@/lib/ipcRenderer";
 
 export function EditProfile({ profile }: EditProfileProps ) {
   const [open, setOpen] = useState(false);
@@ -37,39 +37,23 @@ export function EditProfile({ profile }: EditProfileProps ) {
 
   useEffect(() => {
     if (editProfile) {
-      const oldProfileName = editProfile.oldProfileName as string;
-      const profileName = editProfile.profileName;
-      const accessKeyId = editProfile.accessKeyId;
-      const secretAccessKey = editProfile.secretAccessKey;
       setEditProfile(undefined);
       dispatchProfile({
         type: ProfileActionTypes.UpdateProfile,
         payload: {
-          oldProfileName,
+          oldProfileName: editProfile.oldProfileName as string,
           newProfileData: {
-            profileName: profileName,
+            profileName: editProfile.profileName,
             accountId: "",
             roles: [],
           },
         },
       });
-      window.electron.profile.send('update-profile', JSON.stringify({
-        oldProfileName,
-        newProfileData: {
-          profileName,
-          accessKeyId,
-          secretAccessKey,
-        }
-      }));
-      window.electron.profile.once('update-profile', (editProfileString: string) => {
-        const editProfile = ipcParser(editProfileString) as EditConfigureProfile;
-        if (editProfile) {
+      IpcRenderer.updateProfile(editProfile, (updateProfile) => {
+        if (updateProfile) {
           dispatchProfile({
             type: ProfileActionTypes.UpdateProfile,
-            payload: {
-              oldProfileName: profileName,
-              newProfileData: editProfile.newProfileData,
-            },
+            payload: updateProfile as EditConfigureProfile,
           });
         };
       });

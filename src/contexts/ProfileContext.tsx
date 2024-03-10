@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { ipcParser } from '@/lib/ipcParser';
-import { getLocalStorageProfileList, setLocalStorageProfileList } from '@/lib/storage';
 import { ProfileAction, ProfileActionTypes } from '@/types/actions';
+import IpcRenderer from '@/lib/ipcRenderer';
 
 const ProfileContext = createContext<{
   profileList: Profile[];
@@ -49,26 +49,27 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profileList, dispatchProfile] = useReducer(profileReducer, []);
 
   useEffect(() => {
-    const initProfiles = getLocalStorageProfileList();
-    if (!initProfiles || initProfiles.length === 0) {
-      let messageCount = 0;
-      const maxMessages = 2;
-      window.electron.profile.send('init-profiles');
-      window.electron.profile.on('init-profiles', (initProfilesString: string) => {
-        const initProfiles = ipcParser(initProfilesString) as Profile[];
+    IpcRenderer.getProfileList((initProfiles) => {
+      if (!initProfiles || initProfiles.length === 0) {
+        let messageCount = 0;
+        const maxMessages = 2;
+        window.electron.profile.send('init-profiles');
+        window.electron.profile.on('init-profiles', (initProfilesString: string) => {
+          const initProfiles = ipcParser(initProfilesString) as Profile[];
+          dispatchProfile({ type: ProfileActionTypes.SetProfileList, payload: initProfiles });
+          messageCount += 1;
+          if (messageCount >= maxMessages) {
+            IpcRenderer.removeAllListeners('init-profiles');
+          }
+        });
+      } else {
         dispatchProfile({ type: ProfileActionTypes.SetProfileList, payload: initProfiles });
-        messageCount += 1;
-        if (messageCount >= maxMessages) {
-          window.electron.profile.removeAllListeners('init-profiles');
-        }
-      });
-    } else {
-      dispatchProfile({ type: ProfileActionTypes.SetProfileList, payload: initProfiles });
-    }
+      }
+    });
   }, []);
 
   useEffect(() => {
-    setLocalStorageProfileList(profileList);
+    IpcRenderer.setProfileList(profileList);
   }, [profileList]);
 
   return (

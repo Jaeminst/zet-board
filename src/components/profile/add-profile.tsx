@@ -7,8 +7,8 @@ import { useForm } from 'react-hook-form'
 import { useEffect, useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSearch } from "@/contexts/ProfileSearchContext";
-import { ipcParser } from "@/lib/ipcParser";
 import { ProfileActionTypes } from "@/types/actions";
+import IpcRenderer from "@/lib/ipcRenderer";
 
 export function AddProfile() {
   const [open, setOpen] = useState(false);
@@ -31,10 +31,8 @@ export function AddProfile() {
     addProfileToResult(data);
   };
 
-  const addProfileToResult = async (newProfile: ProfileCredentials) => {
+  const addProfileToResult = (newProfile: ProfileCredentials) => {
     const profileName = newProfile.profileName;
-    const accessKeyId = newProfile.accessKeyId;
-    const secretAccessKey = newProfile.secretAccessKey;
     const profileNameExists = profileList.some(profile => profile.profileName === profileName);
     if (!profileNameExists) {
       const profile: Profile = {
@@ -45,13 +43,7 @@ export function AddProfile() {
       };
       dispatchProfile({ type: ProfileActionTypes.AddProfile, payload: profile });
     }
-    window.electron.profile.send('add-profile', JSON.stringify({
-      profileName,
-      accessKeyId,
-      secretAccessKey,
-    }));
-    window.electron.profile.once('add-profile', (addProfileString: string) => {
-      const addProfile = ipcParser(addProfileString) as ConfigureProfile;
+    IpcRenderer.addProfile(newProfile, (addProfile) => {
       if (addProfile) {
         dispatchProfile({
           type: ProfileActionTypes.UpdateProfile,

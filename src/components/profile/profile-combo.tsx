@@ -27,13 +27,11 @@ export function ProfileCombo() {
   const handleSelectProfileSession = (profileName: string, selectRole: string | undefined): void => {
     if (selectRole) {
       setProfileSession(profileName);
-      localStorage.setItem('profileSession', profileName);
     } else {
       toast.error(`${profileName} 역할이 선택되지 않았습니다.`, {
         description: `Select Role: ${selectRole}`,
         duration: 5000
       });
-      localStorage.setItem('profileSession', 'Select Profile');
       setProfileSession('Select Profile');
     }
   };

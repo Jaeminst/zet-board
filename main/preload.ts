@@ -5,6 +5,9 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 const electronHandler = {
   setTitle: (title: string) => ipcRenderer.send('set-title', title),
   profile: {
+    sendSync(channel: ipcProfile, ...args: string[]): string {
+      return ipcRenderer.sendSync(channel, ...args);
+    },
     send(channel: ipcProfile, ...args: string[]) {
       ipcRenderer.send(channel, ...args);
     },
@@ -28,6 +31,9 @@ const electronHandler = {
     }
   },
   database: {
+    sendSync(channel: ipcDatabase, ...args: string[]) {
+      ipcRenderer.sendSync(channel, ...args);
+    },
     send(channel: ipcDatabase, ...args: string[]) {
       ipcRenderer.send(channel, ...args);
     },

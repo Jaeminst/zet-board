@@ -1,6 +1,7 @@
 // Main File for Electron
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { autoUpdater } from 'electron-updater';
+import Store from './utils/store';
 import path from 'path';
 import serve from 'electron-serve';
 import { registerIpcProfile } from "./profile";
@@ -34,6 +35,21 @@ if (!isDev) {
   app.setPath("userData", `${app.getPath("userData")} (development)`);
 }
 
+const store = new Store({
+  // We'll call our data file 'user-preferences'
+  configName: 'store',
+  defaults: {
+    // default size of our window
+    windowBounds: { width: 1600, height: 900 },
+    tokenSuffix: `_token`,
+    profileSession: 'Select Profile',
+    profileSessions: [],
+    profileList: [],
+    databaseList: {},
+    databaseSettings: {},
+  }
+});
+
 const createWindow = () => {
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -42,10 +58,11 @@ const createWindow = () => {
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
   };
+  let { width, height } = store.get('windowBounds');
   win = new BrowserWindow({
     show: false,
-    width: 1600,
-    height: 900,
+    width,
+    height,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       devTools: isDev,
@@ -74,6 +91,17 @@ const createWindow = () => {
   } else {
     win.loadURL("app://./home.html");
   }
+
+  win.on('resize', () => {
+    if (!win) {
+      throw new Error('"win" is not defined');
+    }
+    // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
+    // the height, width, and x and y coordinates.
+    let { width, height } = win.getBounds();
+    // Now that we have them, save them using the `set` method.
+    store.set('windowBounds', { width, height });
+  });
 
   win.on('ready-to-show', () => {
     if (!win) {
@@ -135,5 +163,5 @@ app
 
 
 // 시작시 프로파일 dev, qa, stage, prod 중 있는것 반환
-registerIpcProfile();
-registerIpcDatabase();
+registerIpcProfile(store);
+registerIpcDatabase(store);

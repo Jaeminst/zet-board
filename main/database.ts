@@ -1,6 +1,7 @@
 import { describeClusters, describeInstances } from "./aws/rdsClient";
 import { getAwsCredentials } from "./utils/credentials";
-import { ipcMainListener } from "./utils/ipc";
+import { ipcMainListener, ipcMainListenerSync } from "./utils/ipc";
+import Store from "./utils/store";
 
 
 function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
@@ -64,9 +65,23 @@ function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
   return mergedData;
 }
 
-
-
-export function registerIpcDatabase() {
+export function registerIpcDatabase(store: Store) {
+  ipcMainListener('get-databaseList', () => {
+    const databaseList = store.get('databaseList');
+    return databaseList
+  });
+  ipcMainListenerSync('set-databaseList', (data) => {
+    store.set('databaseList', data);
+    return 'set-databaseList'
+  });
+  ipcMainListener('get-databaseSettings', () => {
+    const databaseSettings = store.get('databaseSettings');
+    return databaseSettings
+  });
+  ipcMainListenerSync('set-databaseSettings', (data) => {
+    store.set('databaseSettings', data);
+    return 'set-databaseSettings'
+  });
   ipcMainListener('init-databases', async ({ data }) => {
     const profileName = data.profileName;
     const tokenSuffix = data.tokenSuffix;

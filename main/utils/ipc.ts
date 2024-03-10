@@ -22,3 +22,15 @@ export async function ipcMainListener(eventName: string, processLogic: ({ data, 
     }
   });
 }
+
+export function ipcMainListenerSync(eventName: string, processLogic: (data: any) => string | object) {
+  ipcMain.on(eventName, (event, request) => {
+    try {
+      const data = ipcParser(request);
+      const replyMessage = processLogic(data);
+      event.returnValue = successMessage(replyMessage);
+    } catch (error) {
+      event.returnValue = errorMessage(error);
+    }
+  });
+}

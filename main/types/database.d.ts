@@ -1,4 +1,10 @@
-type ipcDatabase = "init-databases" | "databases-metric";
+type ipcDatabase =
+  | "init-databases"
+  | "databases-metric"
+  | "get-databaseList"
+  | "set-databaseList"
+  | "get-databaseSettings"
+  | "set-databaseSettings"
 
 interface DescribeCluster {
   Identifier: string | undefined;

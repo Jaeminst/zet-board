@@ -1,6 +1,6 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
-import { getLocalStorageDatabaseSettings, setLocalStorageDatabaseSettings } from '@/lib/storage';
+import IpcRenderer from '@/lib/ipcRenderer';
 import { useProfileSession } from './ProfileSessionContext';
 
 const DatabaseSettingContext = createContext<[DatabaseSetting, Dispatch<SetStateAction<DatabaseSetting>>] | undefined>(undefined);
@@ -11,16 +11,18 @@ export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profileSession !== '' && profileSession !== 'Select Profile') {
-      const databaseSettings = getLocalStorageDatabaseSettings();
-      setDatabaseSettingList(databaseSettings[profileSession]);
+      IpcRenderer.getDatabaseSettings((databaseSettings) => {
+        setDatabaseSettingList(databaseSettings[profileSession]);
+      });
     }
   }, [profileSession]);
 
   useEffect(() => {
     if (databaseSettingList && profileSession !== '' && profileSession !== 'Select Profile') {
-      const databaseSettings = getLocalStorageDatabaseSettings();
-      databaseSettings[profileSession] = databaseSettingList
-      setLocalStorageDatabaseSettings(databaseSettings);
+      IpcRenderer.getDatabaseSettings((databaseSettings) => {
+        databaseSettings[profileSession] = databaseSettingList
+        IpcRenderer.setDatabaseSettings(databaseSettings);
+      });
     }
   }, [databaseSettingList, profileSession]);
 

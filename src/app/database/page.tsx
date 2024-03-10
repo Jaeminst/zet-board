@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useState } from 'react';
 import { Loader2, RotateCw } from 'lucide-react';
-import { getLocalStorageDatabaseList } from '@/lib/storage';
+import IpcRenderer from '@/lib/ipcRenderer';
 import { ipcParser } from '@/lib/ipcParser';
 import { Button } from '@/components/ui/button';
 import { ProfileCombo } from '@/components/profile/profile-combo';
@@ -26,15 +26,16 @@ export default function DatabasePage() {
 
   const refreshDatabaseList = useCallback(() => {
     setIsRefresh(true)
-    const initDatabases = getLocalStorageDatabaseList();
-    window.electron.database.send('init-databases', JSON.stringify({
-      profileName: profileSession,
-      tokenSuffix: `_token`,
-    }));
-    window.electron.database.once('init-databases', (initDatabasesString: string) => {
-      initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
-      setDatabaseList(initDatabases[profileSession]);
-      setIsRefresh(false)
+    IpcRenderer.getDatabaseList((initDatabases) => {
+      window.electron.database.send('init-databases', JSON.stringify({
+        profileName: profileSession,
+        tokenSuffix: `_token`,
+      }));
+      window.electron.database.once('init-databases', (initDatabasesString: string) => {
+        initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
+        setDatabaseList(initDatabases[profileSession]);
+        setIsRefresh(false)
+      });
     });
   }, [profileSession, setDatabaseList]);
 

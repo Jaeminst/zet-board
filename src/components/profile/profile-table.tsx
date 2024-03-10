@@ -7,11 +7,11 @@ import { useState } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { EditProfile } from './edit-profile';
-import { ipcParser } from '@/lib/ipcParser';
 import { Loading } from '@/components/ui/loading';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { copyToClipboard } from '@/lib/clipboard';
 import { ProfileActionTypes } from '@/types/actions';
+import IpcRenderer from '@/lib/ipcRenderer';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const { profileList, dispatchProfile } = useProfile();
@@ -26,10 +26,8 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const handleDeleteProfile = (idx: number) => {
     const profileToDelete = profileList.find(profile => profile.idx === idx);
     if (profileToDelete) {
-      window.electron.profile.send('delete-profile', profileToDelete.profileName);
-      window.electron.profile.once('delete-profile', (deleteProfileString: string) => {
-        ipcParser(deleteProfileString);
-        dispatchProfile({ type: ProfileActionTypes.DeleteProfile, payload: profileToDelete.profileName });
+      IpcRenderer.deleteProfile(profileToDelete.profileName, (data) => {
+        dispatchProfile({ type: ProfileActionTypes.DeleteProfile, payload: data });
       });
       if (profileToDelete.profileName === profileSession) {
         setProfileSession('Select Profile');

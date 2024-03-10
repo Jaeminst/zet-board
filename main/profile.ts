@@ -4,9 +4,10 @@ import { homedir } from "os";
 import { getUserName, importListRoles } from "./aws/iamClient.js";
 import { getCaller, assumeRole } from "./aws/stsClient.js";
 import { successMessage } from "./utils/reply.js";
-import { ipcMainListener } from "./utils/ipc.js";
+import { ipcMainListener, ipcMainListenerSync } from "./utils/ipc.js";
 import { setTimer } from "./utils/setTimer.js";
 import { getAwsCredentials } from "./utils/credentials.js";
+import Store from "./utils/store.js";
 
 interface ConfigureProfile {
   idx?: number;
@@ -92,7 +93,31 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
   await fs.writeFile(filePath, fileContent, { encoding: 'utf-8' });
 }
 
-export function registerIpcProfile() {
+export function registerIpcProfile(store: Store) {
+  ipcMainListener('get-profileList', () => {
+    const profileList = store.get('profileList');
+    return profileList
+  });
+  ipcMainListenerSync('set-profileList', (data) => {
+    store.set('profileList', data);
+    return 'set-profileList'
+  });
+  ipcMainListener('get-profileSession', () => {
+    const profileSession = store.get('profileSession');
+    return profileSession
+  });
+  ipcMainListenerSync('set-profileSession', (data) => {
+    store.set('profileSession', data);
+    return 'set-profileSession'
+  });
+  ipcMainListener('get-profileSessions', () => {
+    const profileSessions = store.get('profileSessions');
+    return profileSessions
+  });
+  ipcMainListenerSync('set-profileSessions', (data) => {
+    store.set('profileSessions', data);
+    return 'set-profileSessions'
+  });
   ipcMainListener('init-profiles', async ({ event }) => {
     const profiles = ["dev", "qa", "stage", "prod"];
     // let existingProfiles: ProfileStorage = {};    
@@ -148,24 +173,25 @@ output = json`;
   });
 
   ipcMainListener('delete-profile', async ({ data }) => {
-      await Promise.all([
-        deleteProfileInFile(credentialsFilePath, `[${data}]`),
-        deleteProfileInFile(configFilePath, `[profile ${data}]`)
-      ]);
-      return { data };
+    await Promise.all([
+      deleteProfileInFile(credentialsFilePath, `[${data}]`),
+      deleteProfileInFile(configFilePath, `[profile ${data}]`)
+    ]);
+    return data;
   });
 
   ipcMainListener('update-profile', async ({ data }) => {
-      const oldProfileName = data.oldProfileName;
-      const newProfileData = data.newProfileData;
-      const profileName = newProfileData.profileName;
+    const oldProfileName = data.oldProfileName;
+    const profileName = data.profileName;
+    const accessKeyId = data.accessKeyId;
+    const secretAccessKey = data.secretAccessKey;
 
     // accessKeyId와 secretAccessKey의 존재 여부에 따라 credentialsContent 구성 변경
     let credentialsContent = `[${profileName}]`;
-    if (newProfileData.accessKeyId && newProfileData.secretAccessKey) {
+    if (accessKeyId && secretAccessKey) {
       credentialsContent += `
-aws_access_key_id=${newProfileData.accessKeyId}
-aws_secret_access_key=${newProfileData.secretAccessKey}`;
+aws_access_key_id=${accessKeyId}
+aws_secret_access_key=${secretAccessKey}`;
     }
       await Promise.all([
         updateProfileInFile(credentialsFilePath, `[${oldProfileName}]`, credentialsContent),
@@ -173,7 +199,7 @@ aws_secret_access_key=${newProfileData.secretAccessKey}`;
       ]);
       const { accountId, roles } = await initProfile(profileName);
       return {
-        oldProfileName,
+        oldProfileName: profileName,
         newProfileData: {
           profileName,
           accountId,
