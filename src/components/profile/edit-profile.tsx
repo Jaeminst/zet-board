@@ -7,11 +7,12 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { useForm } from 'react-hook-form'
 import { useCallback, useEffect, useState } from "react";
 import { ipcParser } from "@/lib/ipcParser";
+import { ProfileActionTypes } from "@/types/actions";
 
 export function EditProfile({ profile }: EditProfileProps ) {
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
-  const [profileList, setProfileList] = useProfile();
+  const { dispatchProfile } = useProfile();
   const [editProfile, setEditProfile] = useState<ProfileCredentials>();
   const [isAccessKeyFocused, setAccessKeyFocused] = useState(false);
   const [isSecretKeyFocused, setSecretKeyFocused] = useState(false);
@@ -36,18 +37,22 @@ export function EditProfile({ profile }: EditProfileProps ) {
 
   useEffect(() => {
     if (editProfile) {
-      const oldProfileName = editProfile.oldProfileName;
+      const oldProfileName = editProfile.oldProfileName as string;
       const profileName = editProfile.profileName;
       const accessKeyId = editProfile.accessKeyId;
       const secretAccessKey = editProfile.secretAccessKey;
       setEditProfile(undefined);
-      setProfileList(prevProfiles => prevProfiles.map(profile => 
-        profile.profileName === editProfile.oldProfileName ? { ...profile,
-          profileName: editProfile.oldProfileName,
-          accountId: "",
-          roles: []
-        } : profile
-      ));
+      dispatchProfile({
+        type: ProfileActionTypes.UpdateProfile,
+        payload: {
+          oldProfileName,
+          newProfileData: {
+            profileName: profileName,
+            accountId: "",
+            roles: [],
+          },
+        },
+      });
       window.electron.profile.send('update-profile', JSON.stringify({
         oldProfileName,
         newProfileData: {
@@ -59,13 +64,13 @@ export function EditProfile({ profile }: EditProfileProps ) {
       window.electron.profile.once('update-profile', (editProfileString: string) => {
         const editProfile = ipcParser(editProfileString) as EditConfigureProfile;
         if (editProfile) {
-          setProfileList(prevProfiles => prevProfiles.map(profile => 
-            profile.profileName === editProfile.oldProfileName ? { ...profile,
-              profileName: editProfile.newProfileData.profileName, // 업데이트된 프로파일 이름
-              accountId: editProfile.newProfileData.accountId, // 업데이트된 계정 ID
-              roles: editProfile.newProfileData.roles // 업데이트된 역할
-            } : profile
-          ));
+          dispatchProfile({
+            type: ProfileActionTypes.UpdateProfile,
+            payload: {
+              oldProfileName: profileName,
+              newProfileData: editProfile.newProfileData,
+            },
+          });
         };
       });
     }

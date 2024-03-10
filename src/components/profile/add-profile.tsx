@@ -8,11 +8,12 @@ import { useEffect, useState } from "react";
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSearch } from "@/contexts/ProfileSearchContext";
 import { ipcParser } from "@/lib/ipcParser";
+import { ProfileActionTypes } from "@/types/actions";
 
 export function AddProfile() {
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
-  const [profileList, setProfileList] = useProfile();
+  const { profileList, dispatchProfile } = useProfile();
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function AddProfile() {
         accountId: "",
         roles: []
       };
-      setProfileList(prevProfiles => [...prevProfiles, profile]);
+      dispatchProfile({ type: ProfileActionTypes.AddProfile, payload: profile });
     }
     window.electron.profile.send('add-profile', JSON.stringify({
       profileName,
@@ -52,14 +53,18 @@ export function AddProfile() {
     window.electron.profile.once('add-profile', (addProfileString: string) => {
       const addProfile = ipcParser(addProfileString) as ConfigureProfile;
       if (addProfile) {
-        setProfileList(prevProfiles => prevProfiles.map(profile => 
-          profile.profileName === profileName ? { ...profile,
-            profileName,
-            accountId: addProfile.accountId,
-            roles: addProfile.roles
-          } : profile
-        ));
-      };
+        dispatchProfile({
+          type: ProfileActionTypes.UpdateProfile,
+          payload: {
+            oldProfileName: profileName,
+            newProfileData: {
+              profileName,
+              accountId: addProfile.accountId,
+              roles: addProfile.roles,
+            },
+          },
+        });
+      }
     });
   };
 

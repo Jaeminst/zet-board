@@ -1,33 +1,69 @@
-'use client';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { ipcParser } from '@/lib/ipcParser';
 import { getLocalStorageProfileList, setLocalStorageProfileList } from '@/lib/storage';
-import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
+import { ProfileAction, ProfileActionTypes } from '@/types/actions';
 
-const ProfileContext = createContext<[Profile[], Dispatch<SetStateAction<Profile[]>>] | undefined>(undefined);
+const ProfileContext = createContext<{
+  profileList: Profile[];
+  dispatchProfile: React.Dispatch<ProfileAction>;
+} | undefined>(undefined);
+
+// 리듀서 함수
+function profileReducer(profileList: Profile[], action: ProfileAction): Profile[] {
+  switch (action.type) {
+    case ProfileActionTypes.SelectRole:
+      return profileList.map(profile =>
+        profile.idx === action.payload.idx ? { ...profile, selectRole: action.payload.role } : profile
+      );
+    case ProfileActionTypes.SetProfileList:
+      return action.payload;
+    case ProfileActionTypes.AddProfile:
+      return [...profileList, action.payload];
+    case ProfileActionTypes.UpdateProfile:
+      return profileList.map(profile =>
+        profile.profileName === action.payload.oldProfileName
+          ? { ...profile, ...action.payload.newProfileData }
+          : profile
+      );
+    case ProfileActionTypes.DeleteProfile:
+      const filteredProfiles = profileList.filter(profile => profile.profileName !== action.payload);
+      const sortedProfiles = filteredProfiles.sort((a, b) => a.idx - b.idx);
+      return sortedProfiles.map((profile, index) => ({ ...profile, idx: index }));
+    case ProfileActionTypes.SwapProfileIdxUp:
+    case ProfileActionTypes.SwapProfileIdxDown:
+      let newList = [...profileList];
+      const index = action.payload;
+      const isUp = action.type === ProfileActionTypes.SwapProfileIdxUp;
+      const swapWith = isUp ? index - 1 : index + 1;
+      if (newList[index] && newList[swapWith]) {
+        [newList[index], newList[swapWith]] = [newList[swapWith], newList[index]];
+        newList = newList.map((p, idx) => ({ ...p, idx }));
+      }
+      return newList;
+    default:
+      return profileList;
+  }
+}
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [profileList, setProfileList] = useState<Profile[]>([]);
+  const [profileList, dispatchProfile] = useReducer(profileReducer, []);
 
   useEffect(() => {
-    // 로컬 스토리지에서 프로필 데이터를 로드
     const initProfiles = getLocalStorageProfileList();
     if (!initProfiles || initProfiles.length === 0) {
       let messageCount = 0;
-      const maxMessages = 2; // 최대 수신할 메시지 수
-      // 프로필 데이터가 없거나 비어있으면 초기 프로필 설정 실행
+      const maxMessages = 2;
       window.electron.profile.send('init-profiles');
       window.electron.profile.on('init-profiles', (initProfilesString: string) => {
         const initProfiles = ipcParser(initProfilesString) as Profile[];
-        setProfileList(initProfiles);
+        dispatchProfile({ type: ProfileActionTypes.SetProfileList, payload: initProfiles });
         messageCount += 1;
-        // 메시지 수신 횟수가 maxMessages에 도달하면 리스너 제거
         if (messageCount >= maxMessages) {
           window.electron.profile.removeAllListeners('init-profiles');
         }
       });
     } else {
-      // 저장된 프로필 데이터로 상태 업데이트
-      setProfileList(initProfiles);
+      dispatchProfile({ type: ProfileActionTypes.SetProfileList, payload: initProfiles });
     }
   }, []);
 
@@ -36,7 +72,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }, [profileList]);
 
   return (
-    <ProfileContext.Provider value={[profileList, setProfileList]}>
+    <ProfileContext.Provider value={{ profileList, dispatchProfile }}>
       {children}
     </ProfileContext.Provider>
   );
@@ -44,8 +80,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
 export function useProfile() {
   const context = useContext(ProfileContext);
-  if (context === undefined) {
-    throw new Error('useProfile must be used within a ProfileProvider');
-  }
+  if (!context) throw new Error('useProfile must be used within a ProfileProvider');
   return context;
 }

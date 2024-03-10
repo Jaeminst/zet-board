@@ -6,7 +6,7 @@ import { SearchIcon } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function ProfileSearch({ disabled }: { disabled?: boolean }) {
-  const [profileList] = useProfile();
+  const { profileList } = useProfile();
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
   useEffect(() => {

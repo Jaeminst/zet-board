@@ -11,18 +11,16 @@ import { ipcParser } from '@/lib/ipcParser';
 import { Loading } from '@/components/ui/loading';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { copyToClipboard } from '@/lib/clipboard';
+import { ProfileActionTypes } from '@/types/actions';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
-  const [profileList, setProfileList] = useProfile();
+  const { profileList, dispatchProfile } = useProfile();
   const [profileSession, setProfileSession] = useProfileSession();
   const [selectedRoles, setSelectedRoles] = useState<{ [key: number]: string }>({});
 
-  const handleSelectRole = (selectProfile: Profile, role: string): void => {
-    setSelectedRoles(prev => ({ ...prev, [selectProfile.idx]: role }));
-    // profileList 상태에서 idx 값이 일치하는 프로필을 찾아 그의 역할을 업데이트합니다.
-    setProfileList(prevProfileList => prevProfileList.map(profile => 
-      profile.idx === selectProfile.idx ? { ...profile, selectRole: role } : profile
-    ));
+  const handleSelectRole = (idx: number, role: string): void => {
+    setSelectedRoles(prev => ({ ...prev, [idx]: role }));
+    dispatchProfile({ type: ProfileActionTypes.SelectRole, payload: { idx, role }});
   };
 
   const handleDeleteProfile = (idx: number) => {
@@ -31,41 +29,12 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
       window.electron.profile.send('delete-profile', profileToDelete.profileName);
       window.electron.profile.once('delete-profile', (deleteProfileString: string) => {
         ipcParser(deleteProfileString);
-        const filteredProfiles = profileList.filter(profile => profile.profileName !== profileToDelete.profileName);
-        const sortedProfiles = filteredProfiles.sort((a, b) => a.idx - b.idx);
-        const updatedProfileList = sortedProfiles.map((profile, index) => ({ ...profile, idx: index }));
-        setProfileList(updatedProfileList);
+        dispatchProfile({ type: ProfileActionTypes.DeleteProfile, payload: profileToDelete.profileName });
       });
       if (profileToDelete.profileName === profileSession) {
         setProfileSession('Select Profile');
       }
     }
-  };
-
-  const swapProfileIdxUp = (selectedIdx: number) => {
-    setProfileList(currentList => {
-      const newList = [...currentList];
-      const selectedProfile = newList.find(p => p.idx === selectedIdx);
-      const aboveProfile = newList.find(p => p.idx === selectedIdx - 1);
-      if (selectedProfile && aboveProfile) {
-        selectedProfile.idx -= 1;
-        aboveProfile.idx += 1;
-      }
-      return newList;
-    });
-  };
-  
-  const swapProfileIdxDown = (selectedIdx: number) => {
-    setProfileList(currentList => {
-      const newList = [...currentList];
-      const selectedProfile = newList.find(p => p.idx === selectedIdx);
-      const belowProfile = newList.find(p => p.idx === selectedIdx + 1);
-      if (selectedProfile && belowProfile) {
-        selectedProfile.idx += 1;
-        belowProfile.idx -= 1;
-      }
-      return newList;
-    });
   };
 
   return (
@@ -92,7 +61,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
                 {profile.roles !== undefined && (
                   <DropdownMenuContent align="start">
                   {profile.roles.sort((a, b) => a.localeCompare(b)).map((role) => (
-                    <DropdownMenuItem key={role} onClick={() => handleSelectRole(profile, role)}>{role}</DropdownMenuItem>
+                    <DropdownMenuItem key={role} onClick={() => handleSelectRole(profile.idx, role)}>{role}</DropdownMenuItem>
                   ))}
                   </DropdownMenuContent>
                 )}
@@ -127,11 +96,11 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
                 <span className="sr-only">Delete</span>
               </Button>
               <div className="w-12">
-                <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => swapProfileIdxUp(profile.idx)}>
+                <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => dispatchProfile({ type: ProfileActionTypes.SwapProfileIdxUp, payload: profile.idx })}>
                   <ChevronUp className="w-4 h-4" />
                   <span className="sr-only">SwapProfileIdxUp</span>
                 </Button>
-                <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => swapProfileIdxDown(profile.idx)}>
+                <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => dispatchProfile({ type: ProfileActionTypes.SwapProfileIdxDown, payload: profile.idx })}>
                   <ChevronDown className="w-4 h-4" />
                   <span className="sr-only">SwapProfileIdxDown</span>
                 </Button>

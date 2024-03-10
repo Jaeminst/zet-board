@@ -36,15 +36,9 @@ async function initProfile(profile: string) {
     throw new Error('Failed to get user information');
   }
   const userName = getUser.User.UserName
-  if (!userName) {
-    throw new Error('Failed to get user name');
-  }
-  const roles = await importListRoles(config, userName)
+  const roles = await importListRoles(config, userName as string)
   const getIdentity = await getCaller(config)
-  const accountId = getIdentity.Account
-  if (!accountId) {
-    throw new Error('Failed to get account id');
-  }
+  const accountId = getIdentity.Account as string
   return { accountId, roles };
 }
 
@@ -201,10 +195,7 @@ aws_secret_access_key=${newProfileData.secretAccessKey}`;
       if (!getUser || !getUser.User) {
         throw new Error('Failed to get user information');
       }
-      const userName = getUser.User.UserName
-      if (!userName) {
-        throw new Error('Failed to get user name');
-      }
+      const userName = getUser.User.UserName as string
       let input: AssumeRoleInput = {
         RoleArn: "",
         RoleSessionName: "",

@@ -50,9 +50,7 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
   const [databaseSettingList, setDatabaseSettingList] = useDatabaseSetting();
 
   const updateDatabaseField = useCallback((endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string) => {
-    if (!endpoint.Address) {
-      return;
-    }
+    if (!endpoint.Address) return;
     const updatedSettings = { ...databaseSettingList };
     if (!updatedSettings[endpoint.Address]) {
       updatedSettings[endpoint.Address] = {};

@@ -7,7 +7,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 const ProfileSessionContext = createContext<[string, Dispatch<SetStateAction<string>>] | undefined>(undefined);
 
 export function ProfileSessionProvider({ children }: { children: ReactNode }) {
-  const [profileList] = useProfile();
+  const { profileList } = useProfile();
   const [profileSession, setProfileSession] = useState<string>('');
 
   useEffect(() => {
@@ -32,8 +32,7 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   }, [profileSession]);
 
   const renewSession = useCallback(async () => {
-    const selectedProfile = profileList.find(profile => profile.profileName === profileSession);
-    if (!selectedProfile) return;
+    const selectedProfile = profileList.find(profile => profile.profileName === profileSession) as Profile;
     
     // 세션 갱신 로직을 여기에 구현
     window.electron.profile.send('assume-role', JSON.stringify({
@@ -71,8 +70,6 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
         const expiredProfileSession = ipcParser(response);
         if (expiredProfileSession === profileSession) {
           const profileSessions = getSessionStorageProfileSessions();
-          const selectedProfile = profileList.find(profile => profile.profileName === expiredProfileSession);
-          if (!selectedProfile) return;
           const existingSession = profileSessions.find(ps => ps.profileName === expiredProfileSession);
           // Send 'assume-role' only if there's no session or it's outdated
           if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {

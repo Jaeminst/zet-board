@@ -49,17 +49,11 @@ export async function importListRoles(
   const client = new IAMClient(config);
   const command = new ListRolesCommand({});
   const response = await client.send(command);
-  const roles: Role[] | undefined = response.Roles;
-
+  const roles = response.Roles as Role[];
   const filteredRoles: string[] = [];
 
-  if (!roles || !roles.length) return [];
-
   for (const role of roles) {
-    const roleName: string | undefined = role.RoleName;
-
-    if (!roleName) continue; // RoleName이 undefined인 경우에는 처리하지 않고 다음 iteration으로 넘어감
-
+    const roleName = role.RoleName as string;
     const decodeRole = decodeURIComponent(role.AssumeRolePolicyDocument || "");
     const parseRole = JSON.parse(decodeRole);
 

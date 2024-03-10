@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 export function ProfileCombo() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [profileList] = useProfile();
+  const { profileList } = useProfile();
   const [profileSession, setProfileSession] = useProfileSession();
   const handleSelectProfileSession = (profileName: string, selectRole: string | undefined): void => {
     if (selectRole) {

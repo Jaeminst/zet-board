@@ -6,10 +6,7 @@ import { ipcMainListener } from "./utils/ipc";
 function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
   // 인스턴스 매핑 생성
   const instanceMap: InstanceMap = instances.reduce((map: InstanceMap, instance) => {
-    if (!instance || !instance.Identifier) {
-      throw new Error('Failed to Identifier');
-    }
-    map[instance.Identifier] = instance;
+    map[instance.Identifier as string] = instance;
     return map;
   }, {});
 
@@ -22,10 +19,7 @@ function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
     const { DBClusterMembers, ...rest } = cluster;
     const clusterInstances: DescribeInstance[] = DBClusterMembers.map(member => {
       // 인스턴스의 엔드포인트와 포트 정보, 역할 정보 등 갱신
-      if (!member || !member.DBInstanceIdentifier) {
-        throw new Error('Failed to Identifier');
-      }
-      const instance = instanceMap[member.DBInstanceIdentifier];
+      const instance = instanceMap[member.DBInstanceIdentifier as string];
       const role = member.IsClusterWriter ? 'Writer Instance' : 'Reader Instance';
       return { ...instance, Role: role };
     });
@@ -62,10 +56,10 @@ function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
 
   // 정렬
   mergedData.sort((a, b) => {
-    if (!a.Identifier || !b.Identifier) {
+    if (!a.Identifier) {
       throw new Error('Failed to Identifier');
     }
-    return a.Identifier.localeCompare(b.Identifier);
+    return a.Identifier.localeCompare(b.Identifier as string);
   });
   return mergedData;
 }

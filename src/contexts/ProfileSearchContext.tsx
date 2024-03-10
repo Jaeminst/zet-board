@@ -1,5 +1,5 @@
 'use client';
-import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
+import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext } from 'react';
 
 const ProfileSearchContext = createContext<[Profile[], Dispatch<SetStateAction<Profile[]>>] | undefined>(undefined);
 
