@@ -35,7 +35,7 @@ export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
 
 export function useDatabaseSetting() {
   const context = useContext(DatabaseSettingContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useDatabaseSetting must be used within a DatabaseSettingProvider');
   }
   return context;

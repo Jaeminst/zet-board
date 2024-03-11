@@ -15,8 +15,8 @@ export function DatabaseSearchProvider({ children }: { children: ReactNode }) {
 
 export function useDatabaseSearch() {
   const context = useContext(DatabaseSearchContext);
-  if (context === undefined) {
-    throw new Error('useDatabase must be used within a DatabaseProvider');
+  if (!context) {
+    throw new Error('useDatabaseSearch must be used within a DatabaseSearchProvider');
   }
   return context;
 }

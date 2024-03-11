@@ -15,8 +15,8 @@ export function ProfileSearchProvider({ children }: { children: ReactNode }) {
 
 export function useProfileSearch() {
   const context = useContext(ProfileSearchContext);
-  if (context === undefined) {
-    throw new Error('useProfile must be used within a ProfileProvider');
+  if (!context) {
+    throw new Error('useProfileSearch must be used within a ProfileSearchProvider');
   }
   return context;
 }
