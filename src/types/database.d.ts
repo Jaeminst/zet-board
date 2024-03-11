@@ -35,6 +35,7 @@ interface Databases {
 
 interface DatabaseSetting {
   [address: string]: {
+    tunneling?: boolean;
     alias?: string;
     localport?: string;
   };

@@ -9,16 +9,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { PlusSquare, MinusSquare, CheckCircle2, XCircle } from 'lucide-react';
 import { useDatabaseSetting } from '@/contexts/DatabaseSettingContext';
 
-const toggleSwitch = (identifier: string) => {
-  // const updatedList = databaseList.map(database => {
-  //   if (database.identifier === identifier) {
-  //     return { ...database, tunneling: !database.tunneling };
-  //   }
-  //   return database;
-  // });
-  // setDatabaseList(updatedList);
-};
-
 type ExpandedClusters = {
   [key: string]: boolean;
 };
@@ -49,13 +39,17 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
   const [expandedClusters, setExpandedClusters] = useState<ExpandedClusters>({});
   const [databaseSettingList, setDatabaseSettingList] = useDatabaseSetting();
 
-  const updateDatabaseField = useCallback((endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string) => {
+  const updateDatabaseField = useCallback((endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string | boolean) => {
     if (!endpoint.Address) return;
     const updatedSettings = { ...databaseSettingList };
     if (!updatedSettings[endpoint.Address]) {
       updatedSettings[endpoint.Address] = {};
     }
-    updatedSettings[endpoint.Address][field] = value;
+    if (field === 'tunneling') {
+      updatedSettings[endpoint.Address].tunneling = value as boolean;
+    } else {
+      updatedSettings[endpoint.Address][field] = value as string;
+    }
     setDatabaseSettingList(updatedSettings);
   }, [databaseSettingList, setDatabaseSettingList]);
 
@@ -74,7 +68,10 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
     <>
       <TableRow key={database.Identifier}>
         <TableCell className='w-[80px] h-[50px] px-4 pt-1 pb-1'>
-          <Switch checked={database.tunneling} onCheckedChange={() => toggleSwitch(database.Identifier)} />
+          <Switch
+            checked={database.Endpoint.Address ? databaseSettingList?.[database.Endpoint.Address]?.tunneling ?? false : false}
+            onCheckedChange={(checked) => updateDatabaseField(database.Endpoint, 'tunneling', checked)}
+          />
         </TableCell>
         <TableCell className='w-[30px] h-[49px] p-0 pl-[7px] text-slate-500'>
           {database.Role == 'Cluster'
@@ -169,7 +166,7 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
 };
 
 // 클러스터와 연결된 인스턴스들을 렌더링하는 컴포넌트
-const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[], updateDatabaseField: (endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string) => void }) => {
+const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[], updateDatabaseField: (endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string | boolean) => void }) => {
   const [databaseSettingList] = useDatabaseSetting();
 
   return (
@@ -177,7 +174,10 @@ const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[
       {instances.map(instance => (
         <TableRow key={instance.Identifier}>
           <TableCell className='w-[80px] h-[50px] px-4 pt-1 pb-1'>
-            <Switch checked={instance.tunneling} onCheckedChange={() => toggleSwitch(instance.Identifier)} />
+            <Switch
+              checked={instance.Endpoint.Address ? databaseSettingList?.[instance.Endpoint.Address]?.tunneling ?? false : false}
+              onCheckedChange={(checked) => updateDatabaseField(instance.Endpoint, 'tunneling', checked)}
+            />
           </TableCell>
           <TableCell className='relative w-[30px] h-[49px] p-0'>
             <div className="absolute w-full h-full top-0">
