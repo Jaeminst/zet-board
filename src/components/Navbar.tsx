@@ -1,12 +1,19 @@
 'use client';
 import { useRouter } from 'next/navigation'
 import { DatabaseIcon, Package2Icon, SettingsIcon, ShieldX, UserIcon } from "lucide-react"
-import Link from "next/link"
 import { Button } from "./ui/button";
 import { toast } from 'sonner';
+import IpcRenderer from '@/lib/ipcRenderer';
 
 export function Navbar() {
   const router = useRouter()
+  function validateLink(route: string) {
+    IpcRenderer.getProfileSession((initProfileSession) => {
+      initProfileSession !== 'Select Profile'
+      ? router.push(route)
+      : toast.error('Select Profile')
+    });
+  }
   return (
       <div className="hidden border-r bg-gray-100/40 lg:block dark:bg-gray-800/40">
         <div className="flex flex-col gap-2">
@@ -29,11 +36,7 @@ export function Navbar() {
               <Button
                 variant='link'
                 className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-                onClick={() => {
-                  localStorage.getItem('profileSession') !== 'Select Profile'
-                  ? router.push('/database')
-                  : toast.error('Select Profile')
-                }}
+                onClick={() => validateLink('/database')}
               >
                 <DatabaseIcon className="h-4 w-4" />
                 Database
@@ -41,7 +44,7 @@ export function Navbar() {
               <Button
                 variant='link'
                 className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-                onClick={() => router.push('/loading')}
+                onClick={() => validateLink('/loading')}
               >
                 <SettingsIcon className="h-4 w-4" />
                 Settings
