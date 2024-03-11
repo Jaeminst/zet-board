@@ -89,6 +89,13 @@ export default class IpcRenderer {
     }));
   }
 
+  static sessionExpired(callback: (data: string) => void) {
+    window.electron.profile.on('session-expired', (profileNameString) => {
+      const data = ipcParser(profileNameString) as string;
+      callback(data);
+    });
+  }
+
   // Database
   static getDatabaseList(callback: (data: Databases) => void) {
     window.electron.database.send('get-databaseList');

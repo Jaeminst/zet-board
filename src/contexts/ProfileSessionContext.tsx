@@ -1,9 +1,9 @@
 'use client';
 import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect, useCallback } from 'react';
-import { ipcParser } from '@/lib/ipcParser';
 import { useProfile } from '@/contexts/ProfileContext';
 import IpcRenderer from '@/lib/ipcRenderer';
 import { getDate } from '@/lib/date';
+import { toast } from 'sonner';
 
 const ProfileSessionContext = createContext<[string, Dispatch<SetStateAction<string>>] | undefined>(undefined);
 
@@ -16,6 +16,12 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     IpcRenderer.getProfileSessions((sessions) => {
       setProfileSessions(sessions);
+    });
+    IpcRenderer.sessionExpired((profileName) => {
+      toast.info('Session expired', {
+        description: `Profile: ${profileName}`,
+        duration: 5000
+      });
     });
   }, []);
 
@@ -59,6 +65,13 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
       renewSession(profileSession);
     }
   }, [profileSession, profileSessions, renewSession]);
+
+  // 현재 세션 갱신
+  useEffect(() => {
+    if (profileList && profileList.length > 0) {
+      IpcRenderer.setProfileSession(profileSession);
+    }
+  }, [profileList, profileSession]);
 
   return (
     <ProfileSessionContext.Provider value={[profileSession, setProfileSession]}>

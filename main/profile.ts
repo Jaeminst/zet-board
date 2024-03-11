@@ -5,24 +5,9 @@ import { getUserName, importListRoles } from "./aws/iamClient.js";
 import { getCaller, assumeRole } from "./aws/stsClient.js";
 import { successMessage } from "./utils/reply.js";
 import { ipcMainListener, ipcMainListenerSync } from "./utils/ipc.js";
-import { setTimer } from "./utils/setTimer.js";
+import { setRepeater } from "./utils/setTimer.js";
 import { getAwsCredentials } from "./utils/credentials.js";
 import Store from "./utils/store.js";
-
-interface ConfigureProfile {
-  idx?: number;
-  profileName: string;
-  accountId: string;
-  roles: string[];
-}
-
-interface AssumeRoleInput {
-  RoleArn: string;
-  RoleSessionName: string;
-  DurationSeconds: number;
-  SerialNumber?: string;
-  TokenCode?: string;
-}
 
 // 자격 증명 파일 및 설정 파일 경로
 const credentialsFilePath = join(homedir(), ".aws", "credentials");
@@ -208,74 +193,84 @@ aws_secret_access_key=${secretAccessKey}`;
       };
   });
 
-  ipcMainListener('assume-role', async ({ event, data }) => {
-      const profileName = `${data.profileName}`;
-      const tokenSuffix = `${data.tokenSuffix}`;
-      const sessionProfileName = `${profileName}${tokenSuffix}`;
-      const accountId = data.accountId;
-      const role = data.role;
-      const tokenCode = data?.tokenCode;
-      const credentials = await getAwsCredentials(profileName);
-      const config = { credentials };
-      const getUser = await getUserName(config)
-      if (!getUser || !getUser.User) {
-        throw new Error('Failed to get user information');
+  async function handleAssumeRole(data: AssumeRoleData) {
+    const profileName = `${data.profileName}`;
+    const tokenSuffix = `${data.tokenSuffix}`;
+    const sessionProfileName = `${profileName}${tokenSuffix}`;
+    const accountId = data.accountId;
+    const role = data.role;
+    const tokenCode = data?.tokenCode;
+    const credentials = await getAwsCredentials(profileName);
+    const config = { credentials };
+    const getUser = await getUserName(config)
+    if (!getUser || !getUser.User) {
+      throw new Error('Failed to get user information');
+    }
+    const userName = getUser.User.UserName as string
+    let input: AssumeRoleInput = {
+      RoleArn: "",
+      RoleSessionName: "",
+      DurationSeconds: 0
+    }
+    if (tokenCode) {
+      input = {
+        RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
+        RoleSessionName: userName,
+        DurationSeconds: 3600,
+        SerialNumber: `arn:aws:iam::${accountId}:mfa/${userName}`,
+        TokenCode: "123456", // 브라우저에서 입력한 값으로 변경해야 함
       }
-      const userName = getUser.User.UserName as string
-      let input: AssumeRoleInput = {
-        RoleArn: "",
-        RoleSessionName: "",
-        DurationSeconds: 0
+    } else {
+      input = {
+        RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
+        RoleSessionName: userName,
+        DurationSeconds: 3600,
       }
-      if (tokenCode) {
-        input = {
-          RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
-          RoleSessionName: userName,
-          DurationSeconds: 3600,
-          SerialNumber: `arn:aws:iam::${accountId}:mfa/${userName}`,
-          TokenCode: "123456", // 브라우저에서 입력한 값으로 변경해야 함
-        }
-      } else {
-        input = {
-          RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
-          RoleSessionName: userName,
-          DurationSeconds: 3600,
-        }
-      }
-      const assumeRoleResponse = await assumeRole(config, input)
-      if (!assumeRoleResponse || !assumeRoleResponse.Credentials) {
-        throw new Error('Failed to assume role');
-      }
-      const defaultCredentialsContent = `[default]
+    }
+    const assumeRoleResponse = await assumeRole(config, input)
+    if (!assumeRoleResponse || !assumeRoleResponse.Credentials) {
+      throw new Error('Failed to assume role');
+    }
+    const defaultCredentialsContent = `[default]
 aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
 aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
 aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
-      const credentialsContent = `[${sessionProfileName}]
+    const credentialsContent = `[${sessionProfileName}]
 aws_access_key_id=${assumeRoleResponse.Credentials.AccessKeyId}
 aws_secret_access_key=${assumeRoleResponse.Credentials.SecretAccessKey}
 aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
-      const configContent = `[profile ${sessionProfileName}]
+    const configContent = `[profile ${sessionProfileName}]
 region = ap-northeast-2
 output = json`;
 
-      let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
-      if (fileContent.includes(sessionProfileName)) {
-        await updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent)
+    let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
+    if (fileContent.includes(sessionProfileName)) {
+      await updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent)
+    } else {
+      await Promise.all([
+        appendProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
+        appendProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent)
+      ]);
+    }
+    if (fileContent.includes('[default]')) {
+      await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+    } else {
+      await appendProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+    }
+    return profileName;
+  }
+  ipcMainListener('assume-role', async ({ event, data }) => {
+    const profileName = await handleAssumeRole(data);
+    setRepeater('1h', async () => {
+      if (store.get('profileSession') === profileName) {
+        await handleAssumeRole(data);
+        return true;
       } else {
-        await Promise.all([
-          appendProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
-          appendProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent)
-        ]);
+        event.reply('session-expired', successMessage(profileName));
+        return false;
       }
-      if (fileContent.includes('[default]')) {
-        await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
-      } else {
-        await appendProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
-      }
-      setTimer('1h', () => {
-        event.reply('session-expired', successMessage(profileName))
-      })
-      return profileName;
+    });
+    return profileName;
   });
 
   ipcMainListener('default-profile', async ({ data }) => {
