@@ -10,73 +10,55 @@ const ProfileSessionContext = createContext<[string, Dispatch<SetStateAction<str
 export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   const { profileList } = useProfile();
   const [profileSession, setProfileSession] = useState<string>('Select Profile');
+  const [profileSessions, setProfileSessions] = useState<ProfileSession[]>([]);
 
-  // useEffect(() => {
-  //   IpcRenderer.getProfileSession((initProfileSession) => {
-  //     setProfileSession(initProfileSession);
-  //   });
-  // }, []);
+  // 세션 정보 로드
+  useEffect(() => {
+    IpcRenderer.getProfileSessions((sessions) => {
+      setProfileSessions(sessions);
+    });
+  }, []);
+
+  // 초기 세션 설정
+  useEffect(() => {
+    if (profileList && profileList.length > 0) {
+      IpcRenderer.getProfileSession((initProfileSession) => {
+        setProfileSession(initProfileSession || 'Select Profile');
+      });
+    }
+  }, [profileList]);
 
   const updateSession = useCallback((profileName: string) => {
-    let profileSessions = IpcRenderer.getProfileSessions();
     const nowString = getDate();
-    const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
-    if (existingSession) {
-      // Update existing session timestamp
-      profileSessions = profileSessions.map(session => 
-        session.profileName === profileSession ? { ...session, createdAt: nowString } : session
-      );
-    } else {
-      // Add new session
-      profileSessions.push({ profileName, createdAt: nowString });
-    }
-    IpcRenderer.setProfileSessions(profileSessions);
-  }, [profileSession]);
+    const newProfileSessions = profileSessions.some(ps => ps.profileName === profileName) 
+      ? profileSessions.map(session => session.profileName === profileName ? { ...session, createdAt: nowString } : session)
+      : [...profileSessions, { profileName, createdAt: nowString }];
 
-  const renewSession = useCallback(() => {
-    const selectedProfile = profileList.find(profile => profile.profileName === profileSession) as Profile;
-    IpcRenderer.assumeRole(profileSession, selectedProfile, (updatedProfileSession) => {
-      if (updatedProfileSession) {
-        updateSession(updatedProfileSession)
-      } else {
-        setProfileSession('Select Profile');
-      }
-    });
-  }, [profileList, profileSession, updateSession]);
+    setProfileSessions(newProfileSessions);
+    IpcRenderer.setProfileSessions(newProfileSessions);
+  }, [profileSessions]);
 
-  useEffect(() => {
-    if (profileSession && profileSession !== '' && profileSession !== 'Select Profile') {
-      const profileSessions = IpcRenderer.getProfileSessions();
-      const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
-
-      // Send 'assume-role' only if there's no session or it's outdated
-      if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
-        renewSession();
-      } else {
-        IpcRenderer.defaultProfile(profileSession);
-      }
-      const handleSessionExpired = (response: string) => {
-        const expiredProfileSession = ipcParser(response);
-        if (expiredProfileSession === profileSession) {
-          const profileSessions = IpcRenderer.getProfileSessions();
-          const existingSession = profileSessions.find(ps => ps.profileName === expiredProfileSession);
-          // Send 'assume-role' only if there's no session or it's outdated
-          if (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000) {
-            renewSession();
-          }
+  // 세션 갱신 로직
+  const renewSession = useCallback((profileName: string) => {
+    const selectedProfile = profileList.find(profile => profile.profileName === profileName);
+    if (selectedProfile) {
+      IpcRenderer.assumeRole(profileName, selectedProfile, (updatedProfileSession) => {
+        if (updatedProfileSession) {
+          updateSession(updatedProfileSession);
+        } else {
+          setProfileSession('Select Profile');
         }
-      };
-      window.electron.profile.on('session-expired', handleSessionExpired);
-      return () => {
-        // Clean up the effect when component unmounts or updates
-        window.electron.profile.removeAllListeners('session-expired');
-      };
+      });
     }
-  }, [profileList, profileSession, renewSession]);
+  }, [profileList, updateSession]);
 
+  // 세션 갱신 조건 확인
   useEffect(() => {
-    IpcRenderer.setProfileSession(profileSession);
-  }, [profileSession]);
+    const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
+    if (profileSession !== 'Select Profile' && (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000)) {
+      renewSession(profileSession);
+    }
+  }, [profileSession, profileSessions, renewSession]);
 
   return (
     <ProfileSessionContext.Provider value={[profileSession, setProfileSession]}>
@@ -87,8 +69,8 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
 
 export function useProfileSession() {
   const context = useContext(ProfileSessionContext);
-  if (context === undefined) {
-    throw new Error('useSession must be used within a SessionProvider');
+  if (!context) {
+    throw new Error('useProfileSession must be used within a ProfileSessionProvider');
   }
   return context;
 }

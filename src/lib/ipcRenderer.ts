@@ -57,12 +57,12 @@ export default class IpcRenderer {
     window.electron.profile.sendSync('set-profileSession', profileSession);
   }
 
-  static getProfileSessions(): ProfileSession[] {
+  static getProfileSessions(callback: (data: ProfileSession[]) => void) {
     window.electron.profile.send('get-profileSessions');
     window.electron.profile.once('get-profileSessions', (profileSessionsString: string) => {
-      return ipcParser(profileSessionsString) as ProfileSession[];
+      const data = ipcParser(profileSessionsString) as ProfileSession[];
+      callback(data);
     });
-    return [];
   }
 
   static setProfileSessions(profileSessions: ProfileSession[]) {
