@@ -1,5 +1,5 @@
 import { join } from "path";
-import { promises as fs } from "fs";
+import fs from "fs";
 import { homedir } from "os";
 
 interface AwsCredentials {
@@ -12,7 +12,7 @@ interface AwsCredentials {
 const credentialsFilePath = join(homedir(), ".aws", "credentials");
 
 export async function getAwsCredentials(profile: string): Promise<AwsCredentials> {
-  const content = await fs.readFile(credentialsFilePath, { encoding: 'utf-8' });
+  const content = fs.readFileSync(credentialsFilePath, { encoding: 'utf-8' });
   const lines = content.split(/\r?\n/);
   let currentProfile = '';
   let credentials: AwsCredentials | null = null; // 초기값을 null로 설정

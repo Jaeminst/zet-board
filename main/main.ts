@@ -149,9 +149,17 @@ app.on('window-all-closed', () => {
   }
 });
 
+// 앱이 준비되기 전에 실행할 코드
+async function initialize() {
+  // 시작시 프로파일 dev, qa, stage, prod 중 있는것 반환
+  registerIpcProfile(store);
+  registerIpcDatabase(store);
+}
+
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
+    await initialize();
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
@@ -160,8 +168,3 @@ app
     });
   })
   .catch(console.log);
-
-
-// 시작시 프로파일 dev, qa, stage, prod 중 있는것 반환
-registerIpcProfile(store);
-registerIpcDatabase(store);

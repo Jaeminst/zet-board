@@ -1,5 +1,5 @@
 import { join } from "path";
-import { promises as fs } from "fs";
+import fs from "fs";
 import { homedir } from "os";
 import { getUserName, importListRoles } from "./aws/iamClient.js";
 import { getCaller, assumeRole } from "./aws/stsClient.js";
@@ -46,19 +46,19 @@ async function initProfile(profile: string) {
 // 신규 프로파일 추가
 async function appendProfileInFile(filePath: string, profileName: string, content: string) {
   // 파일 내용 읽기 및 마지막 줄 공백 검사
-  let fileContent = await fs.readFile(filePath, 'utf8');
+  let fileContent = fs.readFileSync(filePath, 'utf8');
   // 프로파일 중복 검사
   if (fileContent.includes(profileName)) {
     throw new Error('Profile already exists');
   }
   // 파일의 마지막 줄이 공백이 아니면 줄바꿈 추가하여 새로운 내용에만 반영
   const contentToAdd = fileContent.endsWith('\n') ? content : '\n' + content;
-  await fs.appendFile(filePath, contentToAdd);
+  fs.appendFileSync(filePath, contentToAdd);
 }
 
 // 기존 프로파일 삭제
 async function deleteProfileInFile(filePath: string, profileName: string) {
-  let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
+  let fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
   const profileStart = fileContent.indexOf(profileName);
   if (profileStart === -1) {
     return;
@@ -66,12 +66,12 @@ async function deleteProfileInFile(filePath: string, profileName: string) {
   let profileEnd = fileContent.indexOf('[', profileStart + 1);
   profileEnd = profileEnd === -1 ? fileContent.length : profileEnd;
   fileContent = fileContent.substring(0, profileStart) + fileContent.substring(profileEnd);
-  await fs.writeFile(filePath, fileContent);
+  fs.writeFileSync(filePath, fileContent);
 };
 
 async function updateProfileInFile(filePath: string, oldProfileName: string, newProfileData: string) {
   // 파일의 전체 내용을 읽어옵니다.
-  let fileContent = await fs.readFile(filePath, { encoding: 'utf-8' });
+  let fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
 
   // 프로필의 시작 위치를 찾습니다.
   const startIdx = fileContent.indexOf(oldProfileName);
@@ -90,7 +90,7 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
   fileContent = fileContent.substring(0, startIdx) + newProfileData + fileContent.substring(endIdx);
 
   // 변경된 내용으로 파일을 다시 씁니다.
-  await fs.writeFile(filePath, fileContent, { encoding: 'utf-8' });
+  fs.writeFileSync(filePath, fileContent, { encoding: 'utf-8' });
 }
 
 export function registerIpcProfile(store: Store) {
@@ -124,7 +124,7 @@ export function registerIpcProfile(store: Store) {
     let existingProfiles: ConfigureProfile[] = [];
     let idx = 0;
 
-      const data = await fs.readFile(credentialsFilePath, "utf8");
+      const data = fs.readFileSync(credentialsFilePath, "utf8");
       for (const profile of profiles) {
         if (data.includes(`[${profile}]`)) {
           existingProfiles.push({
@@ -156,7 +156,7 @@ aws_secret_access_key=${data.secretAccessKey}`;
       const configContent = `[profile ${profileName}]
 region = ap-northeast-2
 output = json`;
-      let fileContent = await fs.readFile(credentialsFilePath, 'utf8');
+      let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
       if (fileContent.includes(profileName)) {
         await Promise.all([
           updateProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
@@ -258,7 +258,7 @@ aws_session_token=${assumeRoleResponse.Credentials.SessionToken}`;
 region = ap-northeast-2
 output = json`;
 
-      let fileContent = await fs.readFile(credentialsFilePath, 'utf8');
+      let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
       if (fileContent.includes(sessionProfileName)) {
         await updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent)
       } else {
