@@ -12,11 +12,8 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   const [profileSession, setProfileSession] = useState<string>('Select Profile');
   const [profileSessions, setProfileSessions] = useState<ProfileSession[]>([]);
 
-  // 세션 정보 로드
+  // 세션 만료 메시지 수신
   useEffect(() => {
-    IpcRenderer.getProfileSessions((sessions) => {
-      setProfileSessions(sessions);
-    });
     IpcRenderer.sessionExpired((profileName) => {
       toast.info('Session expired', {
         description: `Profile: ${profileName}`,
@@ -61,12 +58,12 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
   // 세션 갱신 조건 확인
   useEffect(() => {
     const existingSession = profileSessions.find(ps => ps.profileName === profileSession);
-    if (profileSession !== 'Select Profile' && (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 55 * 60 * 1000)) {
+    if (profileSession !== 'Select Profile' && (!existingSession || new Date().getTime() - new Date(existingSession.createdAt).getTime() >= 60 * 60 * 1000)) {
       renewSession(profileSession);
     }
   }, [profileSession, profileSessions, renewSession]);
 
-  // 현재 세션 갱신
+  // 현재 세션 저장
   useEffect(() => {
     if (profileList && profileList.length > 0) {
       IpcRenderer.setProfileSession(profileSession);

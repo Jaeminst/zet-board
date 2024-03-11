@@ -261,7 +261,7 @@ output = json`;
   }
   ipcMainListener('assume-role', async ({ event, data }) => {
     const profileName = await handleAssumeRole(data);
-    setRepeater('1h', async () => {
+    setRepeater('59m', async () => {
       if (store.get('profileSession') === profileName) {
         await handleAssumeRole(data);
         return true;
