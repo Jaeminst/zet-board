@@ -66,7 +66,6 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
       console.log('tunneling data', tunnelingData)
       IpcRenderer.tunneling(tunnelingData as TunnelingData, profileSession as string, (status) => {
         if (status.tunneling) {
-          console.log('tunneling success', status.tunneling)
           toast.success(`Tunneling ${updatedSettings[endpoint.Address as string].alias}`);
         }
       });
