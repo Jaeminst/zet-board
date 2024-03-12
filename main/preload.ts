@@ -56,6 +56,16 @@ const electronHandler = {
       ipcRenderer.removeAllListeners(channel);
     }
   },
+  tunneling: {
+    send(channel: ipcTunneling, ...args: string[]) {
+      ipcRenderer.send(channel, ...args);
+    },
+    once(channel: ipcTunneling, func: (...args: string[]) => void) {
+      const subscription = (_event: IpcRendererEvent, ...args: string[]) =>
+        func(...args);
+      ipcRenderer.once(channel, subscription);
+    },
+  },
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

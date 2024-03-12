@@ -5,10 +5,18 @@ export default class IpcRenderer {
     // 초기화 코드가 필요하면 여기에 작성
   }
 
-  static removeAllListeners(listener: ipcProfile) {
-    window.electron.profile.removeAllListeners(listener);
+  static removeAllListeners(listener: ipcProfile | ipcDatabase) {
+    if (ipcProfileEvents.includes(listener as ipcProfile)) {
+      window.electron.profile.removeAllListeners(listener as ipcProfile);
+      return;
+    }
+    if (ipcDatabaseEvents.includes(listener as ipcDatabase)) {
+      window.electron.database.removeAllListeners(listener as ipcDatabase);
+      return;
+    }
   }
 
+  // Profile
   static getProfileList(callback: (data: Profile[]) => void) {
     window.electron.profile.send('get-profileList');
     window.electron.profile.once('get-profileList', (profileListString: string) => {
@@ -119,5 +127,21 @@ export default class IpcRenderer {
 
   static setDatabaseSettings(databaseSettings: DatabaseSettings) {
     window.electron.database.sendSync('set-databaseSettings', JSON.stringify(databaseSettings));
+  }
+
+  // tunneling
+  static tunneling(tunnelingData: TunnelingData, profileName: string, callback: (data: TunnelingStatus) => void) {
+    window.electron.tunneling.send('tunneling', JSON.stringify({
+      type: tunnelingData.type,
+      address: tunnelingData.address,
+      port: tunnelingData.port,
+      profileName,
+      tokenSuffix: `_token`,
+      tunneling: tunnelingData.tunneling,
+    }));
+    window.electron.tunneling.once('tunneling', (status: string) => {
+      const data = ipcParser(status) as TunnelingStatus;
+      callback(data);
+    });
   }
 }

@@ -1,3 +1,5 @@
+type ipcDatabase = typeof ipcDatabaseEvents[number];
+
 interface Endpoint {
   Address: string;
   Port: number;
@@ -37,7 +39,7 @@ interface DatabaseSetting {
   [address: string]: {
     tunneling?: boolean;
     alias?: string;
-    localport?: string;
+    localPort?: string;
   };
 }
 

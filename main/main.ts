@@ -6,6 +6,7 @@ import path from 'path';
 import serve from 'electron-serve';
 import { registerIpcProfile } from "./profile";
 import { registerIpcDatabase } from "./database";
+import { registerIpcTunneling } from "./tunneling";
 
 const isDev = process.env.NODE_ENV === "development";
 const port = 3000;
@@ -47,6 +48,7 @@ const store = new Store({
     profileList: [],
     databaseList: {},
     databaseSettings: {},
+    tunneling: {},
   }
 });
 
@@ -154,6 +156,7 @@ async function initialize() {
   // 시작시 프로파일 dev, qa, stage, prod 중 있는것 반환
   registerIpcProfile(store);
   registerIpcDatabase(store);
+  registerIpcTunneling(store);
 }
 
 app

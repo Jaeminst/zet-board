@@ -1,6 +1,7 @@
 import {
   IAMClient,
   GetUserCommand,
+  GetUserResponse,
   ListRolesCommand,
   Role,
 } from "@aws-sdk/client-iam";
@@ -23,7 +24,7 @@ interface ClientConfig {
 }
  * @returns {Promise<object>} { User: { UserName: "STRING_VALUE" } }
  */
-export async function getUserName(config: ClientConfig) {
+export async function getUserName(config: ClientConfig): Promise<GetUserResponse> {
   const client = new IAMClient(config);
   const command = new GetUserCommand({});
   const response = await client.send(command);

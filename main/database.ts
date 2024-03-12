@@ -66,6 +66,16 @@ function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
 }
 
 export function registerIpcDatabase(store: Store) {
+  // initial tunneling set false
+  const databaseSettings = store.get('databaseSettings');
+  Object.keys(databaseSettings).forEach(environment => {
+    Object.keys(databaseSettings[environment]).forEach(host => {
+      if (databaseSettings[environment][host].hasOwnProperty('tunneling')) {
+        databaseSettings[environment][host].tunneling = false;
+      }
+    });
+  });
+  store.set('databaseSettings', databaseSettings);
   ipcMainListener('get-databaseList', () => {
     const databaseList = store.get('databaseList');
     return databaseList

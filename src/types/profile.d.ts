@@ -1,3 +1,5 @@
+type ipcProfile = typeof ipcProfileEvents[number];
+
 interface ProfileData {
   idx: number;
   accountId: string;

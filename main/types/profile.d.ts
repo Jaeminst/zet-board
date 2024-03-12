@@ -1,17 +1,19 @@
-type ipcProfile =
-  | 'init-profiles'
-  | 'add-profile'
-  | 'delete-profile'
-  | 'update-profile'
-  | 'assume-role'
-  | 'session-expired'
-  | 'default-profile'
-  | 'get-profileList'
-  | 'set-profileList'
-  | 'get-profileSession'
-  | 'set-profileSession'
-  | 'get-profileSessions'
-  | 'set-profileSessions'
+const ipcProfileEvents = [
+  'init-profiles',
+  'add-profile',
+  'delete-profile',
+  'update-profile',
+  'assume-role',
+  'session-expired',
+  'default-profile',
+  'get-profileList',
+  'set-profileList',
+  'get-profileSession',
+  'set-profileSession',
+  'get-profileSessions',
+  'set-profileSessions',
+] as const;
+type ipcProfile = typeof ipcProfileEvents[number];
 
 interface ConfigureProfile {
   idx?: number;

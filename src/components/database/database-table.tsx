@@ -8,6 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PlusSquare, MinusSquare, CheckCircle2, XCircle } from 'lucide-react';
 import { useDatabaseSetting } from '@/contexts/DatabaseSettingContext';
+import { useProfileSession } from '@/contexts/ProfileSessionContext';
+import IpcRenderer from '@/lib/ipcRenderer';
+import { toast } from 'sonner';
 
 type ExpandedClusters = {
   [key: string]: boolean;
@@ -36,6 +39,7 @@ function isDatabaseHealthy(status: string): status is DatabaseStates {
 
 // 클러스터 행을 렌더링하는 컴포넌트
 const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isAllExpanded: boolean }) => {
+  const [profileSession] = useProfileSession();
   const [expandedClusters, setExpandedClusters] = useState<ExpandedClusters>({});
   const [databaseSettingList, setDatabaseSettingList] = useDatabaseSetting();
 
@@ -51,7 +55,23 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
       updatedSettings[endpoint.Address][field] = value as string;
     }
     setDatabaseSettingList(updatedSettings);
-  }, [databaseSettingList, setDatabaseSettingList]);
+    if (field === 'tunneling') {
+      const tunnelingData = {
+        type: 'database',
+        localPort: updatedSettings[endpoint.Address].localPort,
+        address: endpoint.Address,
+        port: endpoint.Port,
+        tunneling: value,
+      }
+      console.log('tunneling data', tunnelingData)
+      IpcRenderer.tunneling(tunnelingData as TunnelingData, profileSession as string, (status) => {
+        if (status.tunneling) {
+          console.log('tunneling success', status.tunneling)
+          toast.success(`Tunneling ${updatedSettings[endpoint.Address as string].alias}`);
+        }
+      });
+    }
+  }, [profileSession, databaseSettingList, setDatabaseSettingList]);
 
   const toggleExpand = (identifier: string) => {
     setExpandedClusters(exp => ({
@@ -96,8 +116,8 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
         <TableCell className='w-[80px] p-1'>
           <EditableField
             label="LocalPort"
-            value={database.Endpoint.Address ? databaseSettingList?.[database.Endpoint.Address]?.localport ?? '' : ''}
-            onSave={(newValue) => updateDatabaseField(database.Endpoint, 'localport', newValue)}
+            value={database.Endpoint.Address ? databaseSettingList?.[database.Endpoint.Address]?.localPort ?? '' : ''}
+            onSave={(newValue) => updateDatabaseField(database.Endpoint, 'localPort', newValue)}
           />
         </TableCell>
         <TableCell className='w-[250px] p-1'>
@@ -192,8 +212,8 @@ const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[
           <TableCell className='w-[80px] p-1'>
             <EditableField
               label="LocalPort"
-              value={instance.Endpoint.Address ? databaseSettingList?.[instance.Endpoint.Address]?.localport ?? '' : ''}
-              onSave={(newValue) => updateDatabaseField(instance.Endpoint, 'localport', newValue)}
+              value={instance.Endpoint.Address ? databaseSettingList?.[instance.Endpoint.Address]?.localPort ?? '' : ''}
+              onSave={(newValue) => updateDatabaseField(instance.Endpoint, 'localPort', newValue)}
             />
           </TableCell>
           <TableCell className='w-[250px] p-1'>

@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation'
-import { DatabaseIcon, Package2Icon, SettingsIcon, ShieldX, UserIcon } from "lucide-react"
+import { DatabaseIcon, Package2Icon, SettingsIcon, UserIcon } from "lucide-react"
 import { Button } from "./ui/button";
 import { toast } from 'sonner';
 import IpcRenderer from '@/lib/ipcRenderer';
