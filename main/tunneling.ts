@@ -4,9 +4,9 @@ import { getAwsCredentials } from "./utils/credentials";
 import { getInstanceId } from "./aws/ec2Client";
 import { startSession, terminateSession } from "./aws/ssmClient";
 import { spawn } from "child_process";
-import net from 'net';
 import { setRepeater } from "./utils/setTimer";
 import { getDate } from "./utils/date";
+import systeminformation from "systeminformation";
 
 export function registerIpcTunneling(store: Store) {
   ipcMainListener('tunneling', async ({ data }: { data: TunnelingData }) => {
@@ -21,22 +21,19 @@ export function registerIpcTunneling(store: Store) {
     if (type === 'database') {
       if (tunneling) {
         // 터널링 연결
+        const databaseSettings = store.get('databaseSettings');
+        const localPort = databaseSettings[profileName][address].localPort as string;
         const databaseTunnel = async () => {
+          const checkSessionId = store.get('tunneling') || {};
+          await terminateSession(config, { SessionId: checkSessionId?.[profileName]?.[address] ?? '' });
           const instanceId = await getInstanceId(config, 'bastion-host')
-          const databaseSettings = store.get('databaseSettings');
           const startSessionResponse = await startSession(config, {
-            Target: instanceId, // required
+            Target: instanceId,
             DocumentName: "AWS-StartPortForwardingSessionToRemoteHost",
-            Parameters: { // SessionManagerParameters
-              "localPortNumber": [ // SessionManagerParameterValueList
-                databaseSettings[profileName][address].localPort,
-              ],
-              "host": [ // SessionManagerParameterValueList
-                address,
-              ],
-              "portNumber": [ // SessionManagerParameterValueList
-                port.toString(),
-              ],
+            Parameters: {
+              "localPortNumber": [localPort],
+              "host": [address],
+              "portNumber": [port.toString()],
             },
           })
           const sessionId = startSessionResponse.SessionId;
@@ -60,20 +57,22 @@ export function registerIpcTunneling(store: Store) {
           );
         };
         await databaseTunnel();
-        const host = '127.0.0.1'; // 호스트 주소
-        const client = net.createConnection({ port, host });
-        client.on('error', async () => {
-          const tunnelingStore = store.get('tunneling');
-          await terminateSession(config, { SessionId: tunnelingStore[profileName][address] });
-          await databaseTunnel();
-        });
+        // 포트 상태를 확인하는 함수
+        const checkPortStatus = async (port: string): Promise<boolean> => {
+          const networkConnections = await systeminformation.networkConnections();
+          return networkConnections.find((networkConnection) => {
+              return networkConnection.localPort === String(port);
+          }) !== undefined;
+        };
         const nowString = getDate();
-        setRepeater('1m', async () => {
+        setRepeater('10s', async () => {
           const tunnelingStore = store.get('tunneling');
           if (tunnelingStore[profileName]?.[address] && store.get('profileSession') === profileName || !(new Date().getTime() - new Date(nowString).getTime() >= 60 * 60 * 1000)) {
+            if (!await checkPortStatus(localPort)) {
+              await databaseTunnel();
+            }
             return true;
           } else {
-            client.end();
             const databaseSettings = store.get('databaseSettings');
             databaseSettings[profileName][address].tunneling = false;
             store.set('databaseSettings', databaseSettings);
