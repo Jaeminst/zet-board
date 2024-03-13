@@ -18,7 +18,7 @@ interface DescribeCluster {
   Size: number | undefined;
   Role: 'Cluster';
   DBClusterMembers?: DBClusterMembers[];
-  Instances?: DbInstance[];
+  Instances?: DescribeInstance[];
 }
 type DBClusterMembers = {
   DBInstanceIdentifier?: string | undefined;
@@ -44,7 +44,7 @@ type Endpoint = {
 }
 
 interface InstanceMap {
-  [Identifier: string]: DbInstance;
+  [Identifier: string]: DescribeInstance;
 }
 
 type DbEntity = DescribeCluster | DescribeInstance;
