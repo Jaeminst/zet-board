@@ -24,8 +24,13 @@ export function registerIpcTunneling(store: Store) {
         const databaseSettings = store.get('databaseSettings');
         const localPort = databaseSettings[profileName][address].localPort as string;
         const databaseTunnel = async () => {
-          const checkSessionId = store.get('tunneling') || {};
-          await terminateSession(config, { SessionId: checkSessionId?.[profileName]?.[address] ?? '' });
+          const tunnelingStore = store.get('tunneling') || {};
+          if (!tunnelingStore[profileName]) {
+              tunnelingStore[profileName] = {};
+          };
+          if (tunnelingStore[profileName]?.[address]) {
+            await terminateSession(config, { SessionId: tunnelingStore[profileName][address] });
+          };
           const instanceId = await getInstanceId(config, 'bastion-host')
           const startSessionResponse = await startSession(config, {
             Target: instanceId,
@@ -37,10 +42,6 @@ export function registerIpcTunneling(store: Store) {
             },
           })
           const sessionId = startSessionResponse.SessionId;
-          const tunnelingStore = store.get('tunneling') || {};
-          if (!tunnelingStore[profileName]) {
-              tunnelingStore[profileName] = {};
-          }
           tunnelingStore[profileName][address] = sessionId;
           store.set('tunneling', tunnelingStore);
           spawn(
