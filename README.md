@@ -21,6 +21,7 @@ Before using ZeT Board, make sure you have the following installed:
 
 - Node.js (version 20 or higher)
 - npm (version 10 or higher)
+- session-manager-plugin (version 1.2.536.0 or higher) [AWS Docs](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 - An AWS access key and a configured AWS role with permissions for accessing the necessary resources.
   - ```hcl
     resource "aws_iam_role" "Administrator" {
