@@ -31,8 +31,7 @@
     "lint": "next lint",
     "build": "npm run build:main && next build && electron-builder build",
     "build:main": "tsc -p main && npm run build:css",
-    "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify",
-    "postinstall": "electron-builder install-app-deps"
+    "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.529.1",
