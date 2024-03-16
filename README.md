@@ -88,17 +88,7 @@ npm run dev
 
 This command runs the application in development mode. For production, you may need to build or package the application, which can be done as described in the packaging section below.
 
-## Packaging the Application
-
-To package the application for production:
-
-```bash
-npm run package
-```
-
-This command compiles the application into an executable package for your platform, making it ready for distribution and use in a production environment.
-
-### Releasing
+## Releasing the Application
 
 When you want to create a new release, follow these steps:
 
