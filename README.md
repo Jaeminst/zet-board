@@ -22,7 +22,46 @@ Before using ZeT Board, make sure you have the following installed:
 - Node.js (version 20 or higher)
 - npm (version 10 or higher)
 - An AWS access key and a configured AWS role with permissions for accessing the necessary resources.
+  - ```hcl
+    resource "aws_iam_role" "Administrator" {
+      name = "Administrator"
+      assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Effect = "Allow"
+            Principal = {
+              AWS = [
+                "arn:aws:iam::${local.account_id}:user/foo",
+                # ...More user
+              ]
+            }
+            Action = "sts:AssumeRole"
+          },
+          {
+            Effect = "Deny"
+            Principal = {
+              AWS = ["*"]
+            }
+            Action = "sts:AssumeRole"
+            Condition = {
+              NotIpAddress = {
+                "aws:SourceIp" = concat(local.office_lan, local.office_vpn)
+              }
+            }
+          }
+        ]
+      })
+    
+      managed_policy_arns = [
+        "arn:aws:iam::aws:policy/AdministratorAccess",
+      ]
+    }
+    ```
 - A bastion host configured for access via AWS Systems Manager (SSM) session start, to facilitate secure access and management.
+  - [[AWS Docs] Access a bastion host by using session manger](https://docs.aws.amazon.com/prescriptive-guidance/latest/patterns/access-a-bastion-host-by-using-session-manager-and-amazon-ec2-instance-connect.html)
+  - [Terraform quick start for bastion host](https://github.com/Flaconi/terraform-aws-bastion-ssm-iam)
+  - Bastion host set 'tag:Name': `bastion-host` (Later, you can change it in settings)
 
 
 ### Installation
