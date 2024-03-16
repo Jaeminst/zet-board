@@ -13,9 +13,6 @@ const port = 3000;
 
 class AppUpdater {
   constructor() {
-    const server = 'https://update.electronjs.org'
-    const feed = `${server}/Jaeminst/zet-board/${process.platform}-${process.arch}/${app.getVersion()}`
-    autoUpdater.setFeedURL(feed)
     autoUpdater.checkForUpdates();
     autoUpdater.on('update-downloaded', () => {
       if (process.platform === 'win32') {

@@ -1,6 +1,6 @@
 {
   "name": "zet-board",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Desktop app for AWS Tunneling",
   "license": "MIT",
   "author": {
@@ -89,6 +89,9 @@
   "build": {
     "productName": "ZeT Board",
     "appId": "com.jaeminst.zet-board",
+    "publish": {
+      "provider": "github"
+    },
     "files": [
       "release/dist/**/*",
       "node_modules",
