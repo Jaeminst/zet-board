@@ -1,5 +1,5 @@
 'use client';
-import { IsLoading } from '@/components/status/isLoading';
+import { IsLoading } from '@/components/status/IsLoading';
 
 export default function Loading() {
   return (

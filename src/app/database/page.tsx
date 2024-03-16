@@ -5,7 +5,7 @@ import IpcRenderer from '@/lib/ipcRenderer';
 import { ipcParser } from '@/lib/ipcParser';
 import { Button } from '@/components/ui/button';
 import { ProfileCombo } from '@/components/profile/profile-combo';
-import { IsLoadingTable } from '@/components/status/isLoadingTable';
+import { IsLoadingTable } from '@/components/status/IsLoadingTable';
 import { useDatabase } from '@/contexts/DatabaseContext';
 import { useProfileSession } from '@/contexts/ProfileSessionContext';
 import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
