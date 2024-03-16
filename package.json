@@ -98,7 +98,7 @@
       "./assets/**"
     ],
     "linux": {
-      "category": "Office",
+      "category": "System",
       "icon": "assets/icons/",
       "mimeTypes": [
         "text/x-markdown",
@@ -110,7 +110,7 @@
       ]
     },
     "mac": {
-      "category": "public.app-category.productivity",
+      "category": "public.app-category.developer-tools",
       "icon": "assets/icon.icns",
       "target": {
         "target": "default",
@@ -123,7 +123,8 @@
       "hardenedRuntime": true,
       "entitlements": "assets/entitlements.mac.plist",
       "entitlementsInherit": "assets/entitlements.mac.plist",
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "notarize": false
     },
     "win": {
       "icon": "assets/icon.ico",
