@@ -1,6 +1,6 @@
 {
   "name": "zet-board",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Desktop app for AWS Tunneling",
   "license": "MIT",
   "author": {
@@ -124,9 +124,6 @@
       "entitlements": "assets/entitlements.mac.plist",
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false
-    },
-    "dmg": {
-      "sign": false
     },
     "win": {
       "icon": "assets/icon.ico",
