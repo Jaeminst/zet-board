@@ -4,6 +4,7 @@ import { DatabaseIcon, Package2Icon, SettingsIcon, UserIcon } from "lucide-react
 import { Button } from "./ui/button";
 import { toast } from 'sonner';
 import IpcRenderer from '@/lib/ipcRenderer';
+import Icon from 'public/icon.svg'
 
 export function Navbar() {
   const router = useRouter()
@@ -19,7 +20,7 @@ export function Navbar() {
         <div className="flex flex-col gap-2">
           <div className="flex h-[60px] items-center px-6">
             <div className="flex items-center gap-2 font-semibold">
-              <Package2Icon className="h-6 w-6" />
+              <Icon className="h-6 w-6" />
               <span className="">AWS</span>
             </div>
           </div>

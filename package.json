@@ -95,8 +95,6 @@
   "build": {
     "productName": "ZeT Board",
     "appId": "com.jaeminst.zet-board",
-    "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
     "files": [
       "release/dist/**/*",
       "node_modules",
