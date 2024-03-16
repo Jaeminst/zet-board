@@ -1,6 +1,6 @@
 {
   "name": "zet-board",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Desktop app for AWS Tunneling",
   "license": "MIT",
   "author": {
@@ -29,7 +29,7 @@
     "next:dev": "next dev",
     "electron:dev": "npm run build:main && wait-on tcp:3000 && electronmon -r ts-node/register/transpile-only .",
     "lint": "next lint",
-    "build": "npm run build:main && next build && electron-builder build",
+    "build": "npm run build:main && next build",
     "build:main": "tsc -p main && npm run build:css",
     "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify"
   },
@@ -112,6 +112,13 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "assets/icon.icns",
+      "target": {
+        "target": "default",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
       "type": "distribution",
       "hardenedRuntime": true,
       "entitlements": "assets/entitlements.mac.plist",
