@@ -123,6 +123,9 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false
     },
+    "dmg": {
+      "sign": false
+    },
     "win": {
       "icon": "assets/icon.ico",
       "target": [
