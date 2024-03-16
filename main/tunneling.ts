@@ -8,6 +8,11 @@ import { setRepeater } from "./utils/setTimer";
 import { getDate } from "./utils/date";
 import systeminformation from "systeminformation";
 
+const sessionManagerPluginPath = process.platform === 'win32'
+? `"C:/Program Files/Amazon/SessionManagerPlugin/bin/session-manager-plugin.exe"`
+: `"/usr/local/bin/session-manager-plugin"`;
+const options = process.platform === 'win32' ? { shell: true } : {};
+
 export function registerIpcTunneling(store: Store) {
   ipcMainListener('tunneling', async ({ data }: { data: TunnelingData }) => {
     const type = data.type;
@@ -45,7 +50,7 @@ export function registerIpcTunneling(store: Store) {
           tunnelingStore[profileName][address] = sessionId;
           store.set('tunneling', tunnelingStore);
           spawn(
-            `"C:/Program Files/Amazon/SessionManagerPlugin/bin/session-manager-plugin.exe"`,
+            sessionManagerPluginPath,
             [
               `"${JSON.stringify(JSON.stringify(startSessionResponse))}"`,
               "ap-northeast-2",
@@ -54,7 +59,7 @@ export function registerIpcTunneling(store: Store) {
               `"${JSON.stringify(JSON.stringify({Target: instanceId}))}"`,
               "https://ssm.ap-northeast-2.amazonaws.com"
             ],
-            { shell: true }
+            options
           );
         };
         await databaseTunnel();
