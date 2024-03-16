@@ -34,14 +34,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "build/types/**/*.ts",
-    "main/preload.ts",
-    "main/main.ts",
-    "out/types/**/*.ts"
+    "main/*.ts",
+    "release/dist/renderer/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "out",
-    "build"
+    "release/dist/renderer"
   ]
 }

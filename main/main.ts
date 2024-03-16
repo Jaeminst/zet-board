@@ -31,7 +31,7 @@ let win: BrowserWindow | null;
 
 // run renderer
 if (!isDev) {
-  serve({ directory: "out" });
+  serve({ directory: "release/dist/renderer" });
 } else {
   app.setPath("userData", `${app.getPath("userData")} (development)`);
 }
