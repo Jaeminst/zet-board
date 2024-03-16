@@ -29,14 +29,9 @@
     "next:dev": "next dev",
     "electron:dev": "npm run build:main && wait-on tcp:3000 && electronmon -r ts-node/register/transpile-only .",
     "lint": "next lint",
-    "build": "npm run build:main && next build",
-    "build:tailwindMain": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify",
-    "build:main": "tsc -p main && npm run build:tailwindMain",
-    "package": "npm run clean && npm run build && electron-builder build --publish never",
-    "package:win": "npm run clean && npm run build && electron-builder build --win --publish always",
-    "package:mac": "npm run clean && npm run build && electron-builder build --mac --publish always",
-    "package:linux": "npm run clean && npm run build && electron-builder build --linux --publish always",
-    "clean": "ts-node ./release/scripts/clean.js",
+    "build": "npm run build:main && next build && electron-builder build",
+    "build:main": "tsc -p main && npm run build:css",
+    "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -98,8 +93,24 @@
       "node_modules",
       "package.json"
     ],
-    "afterSign": "./release/scripts/notarize.js",
+    "extraResources": [
+      "./assets/**"
+    ],
+    "linux": {
+      "category": "Office",
+      "icon": "assets/icons/",
+      "mimeTypes": [
+        "text/x-markdown",
+        "text/markdown"
+      ],
+      "target": [
+        "rpm",
+        "deb"
+      ]
+    },
     "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns",
       "target": {
         "target": "default",
         "arch": [
@@ -113,45 +124,11 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false
     },
-    "dmg": {
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    },
     "win": {
+      "icon": "assets/icon.ico",
       "target": [
         "nsis"
       ]
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "category": "Development"
-    },
-    "directories": {
-      "app": ".",
-      "buildResources": "assets",
-      "output": "release/build"
-    },
-    "extraResources": [
-      "./assets/**"
-    ],
-    "publish": {
-      "provider": "s3",
-      "bucket": "electron-aws-dev",
-      "path": "/installer",
-      "region": "ap-northeast-2",
-      "acl": null
     }
   },
   "devEngines": {
