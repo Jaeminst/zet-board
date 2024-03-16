@@ -37,9 +37,7 @@
     "package:mac": "npm run clean && npm run build && electron-builder build --mac --publish always",
     "package:linux": "npm run clean && npm run build && electron-builder build --linux --publish always",
     "clean": "ts-node ./release/scripts/clean.js",
-    "postinstall": "ts-node release/scripts/check-native-dep.js && electron-builder install-app-deps && npm run rebuild && npm run link-modules",
-    "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir .",
-    "link-modules": "node -r ts-node/register ../scripts/link-modules.ts"
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.529.1",
