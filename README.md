@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org/) and Electron.js project that is used as a boiler plate for creating Electron apps using Next.js as the UI.
+# ZeT Board
 
-## Information
+ZeT Board is a desktop application for AWS tunneling, aiming to implement Zero Trust through role-based authentication in AWS.
 
-The boilerplate uses the latest version of Next.js and the app directory feature
+> Desktop Preview
 
-- It uses the [Static Exports feature from Next.js](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports), so unfortunatly you cant use any feature that require dynamic data.
+![ZeT Board Screenshot](screenshot.png)
 
-### Main
 
-Everything regarding the main thread is in the `main` directory, which is written in typescript.
+## Key Features
 
-- The Typescript files are compiled to `/main/out`, where `/main/out/main.js` is the main file that is run
-- The is a slash screen, similar to the Discord app, where that is shown until the renderer is fully loaded.
-- Any html files inside `/main` can use Tailwind classes.
+- **Zero Trust Security**: Provides secure access to AWS resources through role-based authentication.
+- **Easy Setup**: User-friendly interface for straightforward AWS tunneling configuration.
+- **Multi AWS Services Support**: Supports integration with multiple AWS services for efficient management.
 
-### Renderer
+## Getting Started
 
-The `/src` directory hosts the renderer which is a Next.js 13. You can use Tailwind classes there.
+### Prerequisites
 
-## Using the boilerplate
+Before using ZeT Board, make sure you have the following installed:
 
-- run `npm run dev` to launch the electron app as a dev server, any files you change should automatically update.
-- run `npm run build` and after `npm start` to see how the electron app works in production
-- run `npm run package` to package the electron app into an executable.\
+- Node.js (version 20 or higher)
+- npm (version 10 or higher)
+- An AWS access key and a configured AWS role with permissions for accessing the necessary resources.
+- A bastion host configured for access via AWS Systems Manager (SSM) session start, to facilitate secure access and management.
 
-## Issues
 
-- Currently I'm using the Static Export because I dont know how to launch the prod Next.js app when the executable is opened. Tried with `exec`, but that left the Next.js app running even after the executable was terminated.
-- The `main` app for electron has to be restarted every time there are changed done there, I'll try in the future to implement Hot-Reload soonish in the future.
+### Installation
 
-# Outputed files after Build.
+1. Clone the ZeT Board repository from GitHub:
 
-- `/.next` and `/out` contains the Next.js renderer
-- `/main/out` contains the compiled typescript to javascript files for the main thread.
-- `/dist` contains the final packaged Electron app.
+```bash
+git clone https://github.com/Jaeminst/zet-board.git
+```
+
+2. Navigate to the application directory and install the required packages:
+
+```bash
+cd zet-board
+npm install
+```
+
+3. Start the application in development mode:
+
+```bash
+npm run dev
+```
+
+This command runs the application in development mode. For production, you may need to build or package the application, which can be done as described in the packaging section below.
+
+## Packaging the Application
+
+To package the application for production:
+
+```bash
+npm run package
+```
+
+This command compiles the application into an executable package for your platform, making it ready for distribution and use in a production environment.
+
+## Usage
+
+[This section explains the basic usage of the application, such as how to log in, change settings, and perform specific tasks.]
+
+## Contributing
+
+Contributions to the ZeT Board project are welcome! If you would like to contribute, please follow these steps:
+
+1. Fork the project.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a pull request.
+
+## License
+
+This project is distributed under the MIT License. See the `LICENSE` file for more details.
+
+## Contact
+
+If you have any questions or suggestions about ZeT Board, please open an issue in the [issue tracker](https://github.com/Jaeminst/zet-board/issues).
