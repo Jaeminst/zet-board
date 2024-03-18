@@ -1,5 +1,5 @@
 // Main File for Electron
-import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, shell, dialog } from "electron";
 import { autoUpdater } from 'electron-updater';
 import Store from './utils/store';
 import path from 'path';
@@ -125,12 +125,6 @@ const createWindow = () => {
     },
   });
 
-  ipcMain.on('set-title', (event, title) => {
-    const webContents = event.sender;
-    const win = BrowserWindow.fromWebContents(webContents);
-    win?.setTitle(title);
-  });
-
   // 메뉴바 제거
   win.setMenuBarVisibility(false);
 
@@ -156,6 +150,8 @@ const createWindow = () => {
     if (!win) {
       throw new Error('"win" is not defined');
     }
+    const version = require(path.join(__dirname, '../../../package.json')).version;
+    win.setTitle(`ZeT Board ${version}`);
     if (process.env.START_MINIMIZED) {
       win.minimize();
     } else {
