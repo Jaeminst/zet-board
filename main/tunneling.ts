@@ -10,7 +10,7 @@ import systeminformation from "systeminformation";
 
 const sessionManagerPluginPath = process.platform === 'win32'
 ? `"C:/Program Files/Amazon/SessionManagerPlugin/bin/session-manager-plugin.exe"`
-: `"/usr/local/bin/session-manager-plugin"`;
+: `/usr/local/bin/session-manager-plugin`;
 const options = process.platform === 'win32' ? { shell: true } : {};
 
 export function registerIpcTunneling(store: Store) {
@@ -47,18 +47,28 @@ export function registerIpcTunneling(store: Store) {
             },
           })
           const sessionId = startSessionResponse.SessionId;
+          const sessionManagerPluginArgs = process.platform === 'win32'
+          ? [
+            `"${JSON.stringify(JSON.stringify(startSessionResponse))}"`,
+            "ap-northeast-2",
+            "StartSession",
+            "default",
+            `"${JSON.stringify(JSON.stringify({Target: instanceId}))}"`,
+            "https://ssm.ap-northeast-2.amazonaws.com"
+          ]
+          : [
+            `${JSON.stringify(startSessionResponse)}`,
+            "ap-northeast-2",
+            "StartSession",
+            "default",
+            `${JSON.stringify({Target: instanceId})}`,
+            "https://ssm.ap-northeast-2.amazonaws.com"
+          ];
           tunnelingStore[profileName][address] = sessionId;
           store.set('tunneling', tunnelingStore);
           spawn(
             sessionManagerPluginPath,
-            [
-              `"${JSON.stringify(JSON.stringify(startSessionResponse))}"`,
-              "ap-northeast-2",
-              "StartSession",
-              "default",
-              `"${JSON.stringify(JSON.stringify({Target: instanceId}))}"`,
-              "https://ssm.ap-northeast-2.amazonaws.com"
-            ],
+            sessionManagerPluginArgs,
             options
           );
         };
