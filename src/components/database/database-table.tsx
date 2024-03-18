@@ -38,9 +38,8 @@ function isDatabaseHealthy(status: string): status is DatabaseStates {
 }
 
 // 클러스터 행을 렌더링하는 컴포넌트
-const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isAllExpanded: boolean }) => {
+const DatabaseTableRow = ({ database, isExpanded, toggleExpand }: { database: Database, isExpanded: boolean, toggleExpand: (identifier: string) => void }) => {
   const [profileSession] = useProfileSession();
-  const [expandedClusters, setExpandedClusters] = useState<ExpandedClusters>({});
   const [databaseSettingList, setDatabaseSettingList] = useDatabaseSetting();
 
   const updateDatabaseField = useCallback((endpoint: Endpoint, field: keyof DatabaseSetting[string], value: string | boolean) => {
@@ -72,17 +71,6 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
     }
   }, [profileSession, databaseSettingList, setDatabaseSettingList]);
 
-  const toggleExpand = (identifier: string) => {
-    setExpandedClusters(exp => ({
-      ...exp,
-      [identifier]: !exp[identifier]
-    }));
-  };
-
-  useEffect(() => {
-    setExpandedClusters({ [database.Identifier]: isAllExpanded });
-  }, [isAllExpanded, database.Identifier]);
-
   return (
     <>
       <TableRow key={database.Identifier}>
@@ -94,7 +82,7 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
         </TableCell>
         <TableCell className='w-[30px] h-[49px] p-0 pl-[7px] text-slate-500'>
           {database.Role == 'Cluster'
-            ? (expandedClusters[database.Identifier]
+            ? (isExpanded
               ? <button onClick={() => toggleExpand(database.Identifier)}>
                   <MinusSquare className="h-5 w-5" />
                 </button>
@@ -174,7 +162,7 @@ const DatabaseTableRow = ({ database, isAllExpanded }: { database: Database, isA
           }
         </TableCell>
       </TableRow>
-      {database.Role == 'Cluster' && expandedClusters[database.Identifier] && (
+      {database.Role == 'Cluster' && isExpanded && (
         <InstanceRows
           instances={database.Instances}
           updateDatabaseField={updateDatabaseField}
@@ -201,7 +189,10 @@ const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[
           <TableCell className='relative w-[30px] h-[49px] p-0'>
             <div className="absolute w-full h-full top-0">
               <svg className='w-full h-full overflow-visible pointer-events-none'>
-                <line x1='17' y1='-25' x2='17' y2='25' stroke='rgb(170, 183, 184)' strokeWidth='2' vectorEffect='non-scaling-stroke' />
+                {instance.Role === 'Cluster-RO'
+                  ? <line x1='17' y1='-19' x2='17' y2='25' stroke='rgb(170, 183, 184)' strokeWidth='2' vectorEffect='non-scaling-stroke' />
+                  : <line x1='17' y1='-25' x2='17' y2='25' stroke='rgb(170, 183, 184)' strokeWidth='2' vectorEffect='non-scaling-stroke' />
+                }
                 <line x1='17' y1='25' x2='80' y2='25' stroke='rgb(170, 183, 184)' strokeWidth='2' vectorEffect='non-scaling-stroke' />
               </svg>
             </div>
@@ -274,10 +265,46 @@ const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[
 };
 
 export default function DatabaseTable({ databases }: { databases: Database[] }) {
-  const [isAllExpanded, setIsAllExpanded] = useState(false);
+  const [expandedClusters, setExpandedClusters] = useState<ExpandedClusters>({});
+  const [allExpanded, setAllExpanded] = useState(false);
+
+  // 'Cluster' 역할을 가진 데이터베이스만 초기 확장 상태 오브젝트에 포함시킵니다.
+  useEffect(() => {
+    const initialStates = databases.reduce((states, db) => {
+      if (db.Role === 'Cluster') {
+        states[db.Identifier] = false; // Initially, clusters are not expanded
+      }
+      return states;
+    }, {} as ExpandedClusters);
+    setExpandedClusters(initialStates);
+    setAllExpanded(false); // Initially, not all clusters are expanded
+  }, [databases]);
+
+  const toggleExpand = (identifier: string) => {
+    setExpandedClusters(exp => {
+      const newExpanded = { ...exp, [identifier]: !exp[identifier] };
+      // Check if all or none are expanded after this toggle
+      const allExpanded = Object.values(newExpanded).every(exp => exp);
+      const noneExpanded = Object.values(newExpanded).every(exp => !exp);
+
+      // 'Cluster' 역할을 가진 데이터베이스가 모두 확장되거나 모두 축소된 경우 allExpanded 상태를 업데이트합니다.
+      if (allExpanded || noneExpanded) {
+        setAllExpanded(allExpanded);
+      }
+
+      return newExpanded;
+    });
+  };
 
   const toggleAllClusters = () => {
-    setIsAllExpanded(!isAllExpanded);
+    setAllExpanded(!allExpanded);
+    setExpandedClusters(prevState =>
+      Object.keys(prevState).reduce((acc, key) => {
+        // 현재 상태와 반대되는 값을 설정합니다.
+        acc[key] = !allExpanded;
+        return acc;
+      }, {} as ExpandedClusters)
+    );
   };
 
   return (
@@ -287,7 +314,7 @@ export default function DatabaseTable({ databases }: { databases: Database[] }) 
           <TableHead>Tunnel</TableHead>
           <TableHead className='p-2 pt-4'>
             <button onClick={toggleAllClusters}>
-              {isAllExpanded ? <MinusSquare className="h-5 w-5" /> : <PlusSquare className="h-5 w-5" />}
+              {allExpanded ? <MinusSquare className="h-5 w-5" /> : <PlusSquare className="h-5 w-5" />}
             </button>
           </TableHead>
           <TableHead>Alias</TableHead>
@@ -304,7 +331,8 @@ export default function DatabaseTable({ databases }: { databases: Database[] }) 
           <DatabaseTableRow
             key={database.Identifier}
             database={database}
-            isAllExpanded={isAllExpanded}
+            isExpanded={expandedClusters[database.Identifier]}
+            toggleExpand={() => toggleExpand(database.Identifier)}
           />
         ))}
       </TableBody>
