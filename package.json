@@ -23,7 +23,7 @@
       "url": "https://github.com/Jaeminst/zet-board"
     }
   ],
-  "main": "release/dist/main/main.js",
+  "main": "release/build/main/main.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development concurrently -k \"cross-env BROWSER=none npm run next:dev\" \"npm run electron:dev\"",
     "next:dev": "next dev",
@@ -31,7 +31,10 @@
     "lint": "next lint",
     "build": "npm run build:main && next build",
     "build:main": "tsc -p main && npm run build:css",
-    "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify"
+    "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify",
+    "clean": "ts-node ./release/scripts/clean.js",
+    "package": "npm run clean && npm run build && electron-builder --publish never",
+    "release": "npm run clean && npm run build && electron-builder --publish onTagOrDraft"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.529.1",
@@ -93,7 +96,7 @@
       "provider": "github"
     },
     "files": [
-      "release/dist/**/*",
+      "release/build/**/*",
       "node_modules",
       "package.json"
     ],

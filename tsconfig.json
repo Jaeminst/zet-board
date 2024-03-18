@@ -39,10 +39,10 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "main/*.ts",
-    "release/dist/renderer/types/**/*.ts"
+    "release/build/renderer/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "release/dist/renderer"
+    "release/build/renderer"
   ]
 }

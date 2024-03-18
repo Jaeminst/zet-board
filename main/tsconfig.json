@@ -17,7 +17,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "outDir": "../release/dist/main"
+    "outDir": "../release/build/main"
   },
   "compileOnSave": true,
   "include": [
