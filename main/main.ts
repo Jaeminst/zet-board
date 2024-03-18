@@ -1,5 +1,5 @@
 // Main File for Electron
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import { autoUpdater } from 'electron-updater';
 import Store from './utils/store';
 import path from 'path';
@@ -13,14 +13,61 @@ const port = 3000;
 
 class AppUpdater {
   constructor() {
-    autoUpdater.checkForUpdates();
-    autoUpdater.on('update-downloaded', () => {
-      if (process.platform === 'win32') {
+    setTimeout(() => {
+      autoUpdater.checkForUpdates();
+    }, 1000);
+    setInterval(() => {
+      autoUpdater.checkForUpdates();
+    }, 60 * 60 * 1000);
+    if (process.platform === 'darwin') {
+      autoUpdater.on('update-available', (info) => {
+        const https = require('https');
+        const fs = require('fs');
+        const { exec } = require('child_process');
+        const os = require('os');
+        const homeDirectory = os.homedir();
+        const applicationDirectory = `${homeDirectory}/Applications`;
+        function downloadAndUpdate(url: string, zipFilePath: string, appPath: string) {
+          const file = fs.createWriteStream(zipFilePath);
+          https.get(url, function(response: { pipe: (arg0: any) => void; }) {
+            response.pipe(file);
+            file.on('finish', function() {
+              file.close();
+              exec(`unzip -o "${zipFilePath}" -d "${applicationDirectory}"`, () => {
+                exec(`xattr -rd com.apple.quarantine ${appPath}`)
+                dialog.showMessageBox({
+                  type: 'info',
+                  buttons: ['OK'],
+                  title: 'Application Update',
+                  message: 'Application Update',
+                  detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+                }).then((returnValue: { response: number; }) => {
+                  if (returnValue.response === 0) {
+                    exec(`rm -r /Applications/ZeT-Board.app`, () => {
+                      fs.rename(`${appPath}`, `/Applications/ZeT-Board.app`, () => {
+                        exec('defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock')
+                        exec('killall ZeT-Board')
+                      });
+                    });
+                  }
+                });
+              });
+            });
+          });
+        }
+        const newVersion = info.version;
+        const architecture = process.arch === 'arm64' ? 'arm64-' : '';
+        const url = `https://github.com/Jaeminst/zet-board/releases/download/v${newVersion}/ZeT-Board-${newVersion}-${architecture}mac.zip`;
+        const zipFilePath = `${homeDirectory}/Downloads/ZeT-Board-${newVersion}-${architecture}mac.zip`;
+        const appPath = `${applicationDirectory}/ZeT-Board.app`;
+        downloadAndUpdate(url, zipFilePath, appPath);
+      });
+    }
+    if (process.platform === 'win32') {
+      autoUpdater.on('update-downloaded', () => {
         autoUpdater.quitAndInstall(true, true);
-      } else {
-        autoUpdater.quitAndInstall(false, false);
-      }
-    });
+      });
+    }
   }
 }
 
