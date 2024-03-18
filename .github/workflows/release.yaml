@@ -31,5 +31,5 @@ jobs:
 
       - run: npm install
       - run: npm run release
-        with:
-          GH_TOKEN: ${{ secrets.github_token }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
