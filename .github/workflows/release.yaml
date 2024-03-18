@@ -51,11 +51,13 @@ jobs:
     steps:
       - name: Publish the Release
         run: |
+          RELEASE_URL=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} | jq -r '.url')
+          
           curl \
             -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-draft-release.outputs.release_id }}" \
+            $RELEASE_URL \
             -d '{"draft": false}'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
