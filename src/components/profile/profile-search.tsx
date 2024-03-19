@@ -3,13 +3,13 @@ import { Input } from '@/components/ui/input';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useProfileSearch } from '@/contexts/ProfileSearchContext';
 import { SearchIcon } from 'lucide-react';
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 
 export default function ProfileSearch({ disabled }: { disabled?: boolean }) {
   const { profileList } = useProfile();
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!profileSearchList.length) {
       setProfileSearchList(profileList);
     }

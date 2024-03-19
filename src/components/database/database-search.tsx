@@ -4,17 +4,15 @@ import { useDatabase } from '@/contexts/DatabaseContext';
 import { useDatabaseSetting } from '@/contexts/DatabaseSettingContext';
 import { useDatabaseSearch } from '@/contexts/DatabaseSearchContext';
 import { SearchIcon } from 'lucide-react';
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 
 export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
   const [databaseList] = useDatabase();
   const [databaseSettingList] = useDatabaseSetting();
   const [databaseSearchList, setDatabaseSearchList] = useDatabaseSearch();
 
-  useEffect(() => {
-    if (databaseList) {
-      setDatabaseSearchList(databaseList);
-    }
+  useLayoutEffect(() => {
+    setDatabaseSearchList(databaseList);
   }, [databaseList, setDatabaseSearchList]);
 
   function handleSearch(value: string) {

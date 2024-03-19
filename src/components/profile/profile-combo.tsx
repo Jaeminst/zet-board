@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 
 import { cn } from '@/lib/utils'
@@ -36,7 +36,7 @@ export function ProfileCombo() {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (profileSession == 'Select Profile') {
       router.push('/')
     }
