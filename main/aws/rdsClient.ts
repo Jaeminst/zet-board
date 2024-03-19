@@ -2,8 +2,8 @@ import {
   RDSClient,
   DescribeDBClustersCommand,
   DescribeDBInstancesCommand,
-  DescribeDBClustersCommandInput,
-  DescribeDBInstancesCommandInput,
+  type DescribeDBClustersCommandInput,
+  type DescribeDBInstancesCommandInput,
 } from "@aws-sdk/client-rds";
 
 interface ClientConfig {

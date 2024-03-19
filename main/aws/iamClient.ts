@@ -1,9 +1,9 @@
 import {
   IAMClient,
   GetUserCommand,
-  GetUserResponse,
+  type GetUserResponse,
   ListRolesCommand,
-  Role,
+  type Role,
 } from "@aws-sdk/client-iam";
 
 interface ClientConfig {
