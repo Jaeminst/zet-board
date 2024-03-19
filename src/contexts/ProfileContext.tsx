@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 import { ipcParser } from '@/lib/ipcParser';
-import { ProfileAction, ProfileActionTypes } from '@/types/actions';
+import { type ProfileAction, ProfileActionTypes } from '@/types/actions';
 import IpcRenderer from '@/lib/ipcRenderer';
 
 const ProfileContext = createContext<{

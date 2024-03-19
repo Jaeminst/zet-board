@@ -1,4 +1,4 @@
-import { useState, FunctionComponent, KeyboardEvent } from 'react';
+import { useState,type FunctionComponent,type KeyboardEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';

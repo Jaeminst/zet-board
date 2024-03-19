@@ -1,5 +1,5 @@
 'use client';
-import { useState, createContext, Dispatch, SetStateAction, ReactNode, useContext, useEffect } from 'react';
+import { useState, createContext, type Dispatch, type SetStateAction, type ReactNode, useContext, useEffect } from 'react';
 import { useProfileSession } from './ProfileSessionContext';
 import IpcRenderer from '@/lib/ipcRenderer';
 import { ipcParser } from '@/lib/ipcParser';

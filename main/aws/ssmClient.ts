@@ -1,11 +1,11 @@
 import {
   SSMClient,
   StartSessionCommand,
-  StartSessionCommandInput,
-  StartSessionCommandOutput,
   TerminateSessionCommand,
-  TerminateSessionCommandInput,
-  TerminateSessionCommandOutput,
+  type StartSessionCommandInput,
+  type StartSessionCommandOutput,
+  type TerminateSessionCommandInput,
+  type TerminateSessionCommandOutput,
 } from "@aws-sdk/client-ssm";
 
 interface ClientConfig {

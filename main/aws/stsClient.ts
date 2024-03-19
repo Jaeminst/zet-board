@@ -2,7 +2,7 @@ import {
   STSClient,
   GetCallerIdentityCommand,
   AssumeRoleCommand,
-  AssumeRoleCommandInput,
+  type AssumeRoleCommandInput,
 } from "@aws-sdk/client-sts";
 
 interface ClientConfig {
