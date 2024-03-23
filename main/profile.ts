@@ -8,6 +8,7 @@ import { ipcMainListener, ipcMainListenerSync } from './utils/ipc.js';
 import { setRepeater } from './utils/setTimer.js';
 import { getAwsCredentials } from './utils/credentials.js';
 import Store from './utils/store.js';
+import { getDate } from './utils/date.js';
 
 // 자격 증명 파일 및 설정 파일 경로
 const credentialsFilePath = join(homedir(), '.aws', 'credentials');
@@ -261,14 +262,17 @@ output = json`;
   }
   ipcMainListener('assume-role', async ({ event, data }) => {
     const profileName = await handleAssumeRole(data);
-    setRepeater('59m', async () => {
-      if (store.get('profileSession') === profileName) {
-        await handleAssumeRole(data);
-        return true;
-      } else {
+    const nowString = getDate();
+    setRepeater('10s', async () => {
+      if (new Date().getTime() - new Date(nowString).getTime() >= 59 * 60 * 1000) {
+        if (store.get('profileSession') === profileName) {
+          await handleAssumeRole(data);
+          return true;
+        }
         event.reply('session-expired', successMessage(profileName));
         return false;
       }
+      return true;
     });
     return profileName;
   });
