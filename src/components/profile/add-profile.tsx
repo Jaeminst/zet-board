@@ -82,7 +82,7 @@ export function AddProfile() {
               <Input
                 id="profileName"
                 placeholder="Enter your profile"
-                {...register('profileName',{
+                {...register('profileName', {
                   required: ' is required.',
                 })}
               />
@@ -95,7 +95,7 @@ export function AddProfile() {
               <Input
                 id="accessKeyId"
                 placeholder="Enter your access key"
-                {...register('accessKeyId',{
+                {...register('accessKeyId', {
                   required: ' is required.',
                 })}
               />
@@ -108,7 +108,7 @@ export function AddProfile() {
               <Input
                 id="secretAccessKey"
                 placeholder="Enter your secret key"
-                {...register('secretAccessKey',{
+                {...register('secretAccessKey', {
                   required: ' is required.',
                 })}
               />

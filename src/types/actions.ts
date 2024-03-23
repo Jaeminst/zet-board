@@ -1,4 +1,3 @@
-
 // 액션 타입
 export enum ProfileActionTypes {
   SelectRole = 'SELECT_ROLE',
@@ -29,12 +28,12 @@ export interface AddProfileAction {
 export interface UpdateProfileAction {
   type: ProfileActionTypes.UpdateProfile;
   payload: {
-    oldProfileName: string; 
+    oldProfileName: string;
     newProfileData: {
       profileName: string;
       accountId: string;
       roles: string[];
-    }
+    };
   };
 }
 
@@ -54,4 +53,4 @@ export type ProfileAction =
   | AddProfileAction
   | UpdateProfileAction
   | DeleteProfileAction
-  | SwapProfileIdxAction
+  | SwapProfileIdxAction;

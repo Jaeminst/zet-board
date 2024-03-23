@@ -1,14 +1,14 @@
 // Main File for Electron
-import { app, BrowserWindow, shell, dialog } from "electron";
+import { app, BrowserWindow, shell, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import Store from './utils/store';
 import path from 'path';
 import serve from 'electron-serve';
-import { registerIpcProfile } from "./profile";
-import { registerIpcDatabase } from "./database";
-import { registerIpcTunneling } from "./tunneling";
+import { registerIpcProfile } from './profile';
+import { registerIpcDatabase } from './database';
+import { registerIpcTunneling } from './tunneling';
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 const port = 3000;
 
 class AppUpdater {
@@ -16,11 +16,14 @@ class AppUpdater {
     setTimeout(() => {
       autoUpdater.checkForUpdates();
     }, 1000);
-    setInterval(() => {
-      autoUpdater.checkForUpdates();
-    }, 60 * 60 * 1000);
+    setInterval(
+      () => {
+        autoUpdater.checkForUpdates();
+      },
+      60 * 60 * 1000,
+    );
     if (process.platform === 'darwin') {
-      autoUpdater.on('update-available', (info) => {
+      autoUpdater.on('update-available', info => {
         const https = require('https');
         const fs = require('fs');
         const { exec } = require('child_process');
@@ -29,28 +32,30 @@ class AppUpdater {
         const applicationDirectory = `${homeDirectory}/Applications`;
         function downloadAndUpdate(url: string, zipFilePath: string, appPath: string) {
           const file = fs.createWriteStream(zipFilePath);
-          https.get(url, function(response: { pipe: (arg0: any) => void; }) {
+          https.get(url, function (response: { pipe: (arg0: any) => void }) {
             response.pipe(file);
-            file.on('finish', function() {
+            file.on('finish', function () {
               file.close();
               exec(`unzip -o "${zipFilePath}" -d "${applicationDirectory}"`, () => {
-                exec(`xattr -rd com.apple.quarantine ${appPath}`)
-                dialog.showMessageBox({
-                  type: 'info',
-                  buttons: ['OK'],
-                  title: 'Application Update',
-                  message: 'Application Update',
-                  detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-                }).then((returnValue: { response: number; }) => {
-                  if (returnValue.response === 0) {
-                    exec(`rm -r /Applications/ZeT-Board.app`, () => {
-                      fs.rename(`${appPath}`, `/Applications/ZeT-Board.app`, () => {
-                        exec('defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock')
-                        exec('killall ZeT-Board')
+                exec(`xattr -rd com.apple.quarantine ${appPath}`);
+                dialog
+                  .showMessageBox({
+                    type: 'info',
+                    buttons: ['OK'],
+                    title: 'Application Update',
+                    message: 'Application Update',
+                    detail: 'A new version has been downloaded. Restart the application to apply the updates.',
+                  })
+                  .then((returnValue: { response: number }) => {
+                    if (returnValue.response === 0) {
+                      exec(`rm -r /Applications/ZeT-Board.app`, () => {
+                        fs.rename(`${appPath}`, `/Applications/ZeT-Board.app`, () => {
+                          exec('defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock');
+                          exec('killall ZeT-Board');
+                        });
                       });
-                    });
-                  }
-                });
+                    }
+                  });
               });
             });
           });
@@ -78,9 +83,9 @@ let win: BrowserWindow | null;
 
 // run renderer
 if (!isDev) {
-  serve({ directory: "release/build/renderer" });
+  serve({ directory: 'release/build/renderer' });
 } else {
-  app.setPath("userData", `${app.getPath("userData")} (development)`);
+  app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
 const store = new Store({
@@ -96,7 +101,7 @@ const store = new Store({
     databaseList: {},
     databaseSettings: {},
     tunneling: {},
-  }
+  },
 });
 
 const createWindow = () => {
@@ -119,9 +124,9 @@ const createWindow = () => {
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
       contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, 'preload.js'),
       /* eng-disable PRELOAD_JS_CHECK */
-      disableBlinkFeatures: "Auxclick"
+      disableBlinkFeatures: 'Auxclick',
     },
   });
 
@@ -132,7 +137,7 @@ const createWindow = () => {
   if (isDev) {
     win.loadURL(`http://localhost:${port}`);
   } else {
-    win.loadURL("app://./home.html");
+    win.loadURL('app://./home.html');
   }
 
   win.on('resize', () => {
@@ -168,7 +173,7 @@ const createWindow = () => {
   // menuBuilder.buildMenu();
 
   // Open urls in the user's browser
-  win.webContents.setWindowOpenHandler((edata) => {
+  win.webContents.setWindowOpenHandler(edata => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });

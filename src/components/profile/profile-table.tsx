@@ -20,7 +20,7 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
 
   const handleSelectRole = (idx: number, role: string): void => {
     setSelectedRoles(prev => ({ ...prev, [idx]: role }));
-    dispatchProfile({ type: ProfileActionTypes.SelectRole, payload: { idx, role }});
+    dispatchProfile({ type: ProfileActionTypes.SelectRole, payload: { idx, role } });
   };
 
   const handleDeleteProfile = (idx: number) => {
@@ -58,9 +58,9 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
                 </DropdownMenuTrigger>
                 {profile.roles !== undefined && (
                   <DropdownMenuContent align="start">
-                  {profile.roles.sort((a, b) => a.localeCompare(b)).map((role) => (
-                    <DropdownMenuItem key={role} onClick={() => handleSelectRole(profile.idx, role)}>{role}</DropdownMenuItem>
-                  ))}
+                    {profile.roles.sort((a, b) => a.localeCompare(b)).map((role) => (
+                      <DropdownMenuItem key={role} onClick={() => handleSelectRole(profile.idx, role)}>{role}</DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 )}
               </DropdownMenu>

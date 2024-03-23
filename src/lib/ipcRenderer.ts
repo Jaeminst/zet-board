@@ -1,4 +1,4 @@
-import { ipcParser } from "./ipcParser";
+import { ipcParser } from './ipcParser';
 
 export default class IpcRenderer {
   constructor() {
@@ -78,12 +78,15 @@ export default class IpcRenderer {
   }
 
   static assumeRole(profileSession: string, selectedProfile: Profile, callback: (data: string) => void) {
-    window.electron.profile.send('assume-role', JSON.stringify({
-      profileName: profileSession,
-      tokenSuffix: `_token`,
-      accountId: selectedProfile.accountId,
-      role: selectedProfile.selectRole,
-    }));
+    window.electron.profile.send(
+      'assume-role',
+      JSON.stringify({
+        profileName: profileSession,
+        tokenSuffix: `_token`,
+        accountId: selectedProfile.accountId,
+        role: selectedProfile.selectRole,
+      }),
+    );
     window.electron.profile.once('assume-role', (profileSession: string) => {
       const data = ipcParser(profileSession) as string;
       callback(data);
@@ -91,14 +94,17 @@ export default class IpcRenderer {
   }
 
   static defaultProfile(profileSession: string) {
-    window.electron.profile.sendSync('default-profile', JSON.stringify({
-      profileName: profileSession,
-      tokenSuffix: `_token`,
-    }));
+    window.electron.profile.sendSync(
+      'default-profile',
+      JSON.stringify({
+        profileName: profileSession,
+        tokenSuffix: `_token`,
+      }),
+    );
   }
 
   static sessionExpired(callback: (data: string) => void) {
-    window.electron.profile.on('session-expired', (profileNameString) => {
+    window.electron.profile.on('session-expired', profileNameString => {
       const data = ipcParser(profileNameString) as string;
       callback(data);
     });
@@ -131,14 +137,17 @@ export default class IpcRenderer {
 
   // tunneling
   static tunneling(tunnelingData: TunnelingData, profileName: string, callback: (data: TunnelingStatus) => void) {
-    window.electron.tunneling.send('tunneling', JSON.stringify({
-      type: tunnelingData.type,
-      address: tunnelingData.address,
-      port: tunnelingData.port,
-      profileName,
-      tokenSuffix: `_token`,
-      tunneling: tunnelingData.tunneling,
-    }));
+    window.electron.tunneling.send(
+      'tunneling',
+      JSON.stringify({
+        type: tunnelingData.type,
+        address: tunnelingData.address,
+        port: tunnelingData.port,
+        profileName,
+        tokenSuffix: `_token`,
+        tunneling: tunnelingData.tunneling,
+      }),
+    );
     window.electron.tunneling.once('tunneling', (status: string) => {
       const data = ipcParser(status) as TunnelingStatus;
       callback(data);

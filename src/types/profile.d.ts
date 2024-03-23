@@ -1,4 +1,4 @@
-type ipcProfile = typeof ipcProfileEvents[number];
+type ipcProfile = (typeof ipcProfileEvents)[number];
 
 interface ProfileData {
   idx: number;
@@ -26,7 +26,7 @@ interface EditConfigureProfile {
     profileName: string;
     accountId: string;
     roles: string[];
-  }
+  };
 }
 
 interface EditProfileData {

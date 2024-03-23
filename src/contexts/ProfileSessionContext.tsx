@@ -1,5 +1,5 @@
 'use client';
-import { useState, createContext, type Dispatch,type SetStateAction,type ReactNode, useContext, useEffect, useCallback } from 'react';
+import { useState, createContext, type Dispatch, type SetStateAction, type ReactNode, useContext, useEffect, useCallback } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
 import IpcRenderer from '@/lib/ipcRenderer';
 import { getDate } from '@/lib/date';
@@ -33,7 +33,7 @@ export function ProfileSessionProvider({ children }: { children: ReactNode }) {
 
   const updateSession = useCallback((profileName: string) => {
     const nowString = getDate();
-    const newProfileSessions = profileSessions.some(ps => ps.profileName === profileName) 
+    const newProfileSessions = profileSessions.some(ps => ps.profileName === profileName)
       ? profileSessions.map(session => session.profileName === profileName ? { ...session, createdAt: nowString } : session)
       : [...profileSessions, { profileName, createdAt: nowString }];
 

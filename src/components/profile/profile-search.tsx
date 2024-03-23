@@ -13,7 +13,7 @@ export default function ProfileSearch({ disabled }: { disabled?: boolean }) {
     if (!profileSearchList.length) {
       setProfileSearchList(profileList);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileList]);
 
   function handleSearch(value: string) {

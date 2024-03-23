@@ -13,7 +13,7 @@ const ipcProfileEvents = [
   'get-profileSessions',
   'set-profileSessions',
 ] as const;
-type ipcProfile = typeof ipcProfileEvents[number];
+type ipcProfile = (typeof ipcProfileEvents)[number];
 
 interface ConfigureProfile {
   idx?: number;
@@ -30,7 +30,7 @@ interface AssumeRoleInput {
   TokenCode?: string;
 }
 
-interface AssumeRoleData { 
+interface AssumeRoleData {
   profileName: string;
   tokenSuffix: string;
   accountId: string;

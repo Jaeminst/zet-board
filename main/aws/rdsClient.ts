@@ -4,7 +4,7 @@ import {
   DescribeDBInstancesCommand,
   type DescribeDBClustersCommandInput,
   type DescribeDBInstancesCommandInput,
-} from "@aws-sdk/client-rds";
+} from '@aws-sdk/client-rds';
 
 interface ClientConfig {
   credentials: {

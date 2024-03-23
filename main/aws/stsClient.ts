@@ -3,7 +3,7 @@ import {
   GetCallerIdentityCommand,
   AssumeRoleCommand,
   type AssumeRoleCommandInput,
-} from "@aws-sdk/client-sts";
+} from '@aws-sdk/client-sts';
 
 interface ClientConfig {
   credentials: {
@@ -50,10 +50,7 @@ export async function getCaller(config: ClientConfig) {
   }
  * @returns {Promise<object>} { Credentials: { ... } }
  */
-export async function assumeRole(
-  config: ClientConfig,
-  input: AssumeRoleCommandInput
-) {
+export async function assumeRole(config: ClientConfig, input: AssumeRoleCommandInput) {
   const client = new STSClient(config);
   const command = new AssumeRoleCommand(input);
   const response = await client.send(command);

@@ -1,2 +1,1 @@
-type ipcSystemsManager = 'start-session'
-                       | 'terminate-session'
+type ipcSystemsManager = 'start-session' | 'terminate-session';

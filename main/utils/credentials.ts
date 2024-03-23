@@ -1,6 +1,6 @@
-import { join } from "path";
-import fs from "fs";
-import { homedir } from "os";
+import { join } from 'path';
+import fs from 'fs';
+import { homedir } from 'os';
 
 interface AwsCredentials {
   accessKeyId: string;
@@ -9,7 +9,7 @@ interface AwsCredentials {
 }
 
 // 자격 증명 파일 및 설정 파일 경로
-const credentialsFilePath = join(homedir(), ".aws", "credentials");
+const credentialsFilePath = join(homedir(), '.aws', 'credentials');
 
 export async function getAwsCredentials(profile: string): Promise<AwsCredentials> {
   const content = fs.readFileSync(credentialsFilePath, { encoding: 'utf-8' });

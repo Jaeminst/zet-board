@@ -6,7 +6,7 @@ const ipcDatabaseEvents = [
   'get-databaseSettings',
   'set-databaseSettings',
 ] as const;
-type ipcDatabase = typeof ipcDatabaseEvents[number];
+type ipcDatabase = (typeof ipcDatabaseEvents)[number];
 
 interface DescribeCluster {
   Identifier: string | undefined;
@@ -41,7 +41,7 @@ type Endpoint = {
   Address?: string | undefined;
   Port?: number | undefined;
   HostedZoneId?: string | undefined;
-}
+};
 
 interface InstanceMap {
   [Identifier: string]: DescribeInstance;

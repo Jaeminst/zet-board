@@ -1,30 +1,30 @@
-import { join } from "path";
-import fs from "fs";
-import { homedir } from "os";
-import { getUserName, importListRoles } from "./aws/iamClient.js";
-import { getCaller, assumeRole } from "./aws/stsClient.js";
-import { successMessage } from "./utils/reply.js";
-import { ipcMainListener, ipcMainListenerSync } from "./utils/ipc.js";
-import { setRepeater } from "./utils/setTimer.js";
-import { getAwsCredentials } from "./utils/credentials.js";
-import Store from "./utils/store.js";
+import { join } from 'path';
+import fs from 'fs';
+import { homedir } from 'os';
+import { getUserName, importListRoles } from './aws/iamClient.js';
+import { getCaller, assumeRole } from './aws/stsClient.js';
+import { successMessage } from './utils/reply.js';
+import { ipcMainListener, ipcMainListenerSync } from './utils/ipc.js';
+import { setRepeater } from './utils/setTimer.js';
+import { getAwsCredentials } from './utils/credentials.js';
+import Store from './utils/store.js';
 
 // 자격 증명 파일 및 설정 파일 경로
-const credentialsFilePath = join(homedir(), ".aws", "credentials");
-const configFilePath = join(homedir(), ".aws", "config");
+const credentialsFilePath = join(homedir(), '.aws', 'credentials');
+const configFilePath = join(homedir(), '.aws', 'config');
 
 // 프로파일 정보 조회
 async function initProfile(profile: string) {
   const credentials = await getAwsCredentials(profile);
   const config = { credentials };
-  const getUser = await getUserName(config)
+  const getUser = await getUserName(config);
   if (!getUser || !getUser.User) {
     throw new Error('Failed to get user information');
   }
-  const userName = getUser.User.UserName
-  const roles = await importListRoles(config, userName as string)
-  const getIdentity = await getCaller(config)
-  const accountId = getIdentity.Account as string
+  const userName = getUser.User.UserName;
+  const roles = await importListRoles(config, userName as string);
+  const getIdentity = await getCaller(config);
+  const accountId = getIdentity.Account as string;
   return { accountId, roles };
 }
 
@@ -52,7 +52,7 @@ async function deleteProfileInFile(filePath: string, profileName: string) {
   profileEnd = profileEnd === -1 ? fileContent.length : profileEnd;
   fileContent = fileContent.substring(0, profileStart) + fileContent.substring(profileEnd);
   fs.writeFileSync(filePath, fileContent);
-};
+}
 
 async function updateProfileInFile(filePath: string, oldProfileName: string, newProfileData: string) {
   // 파일의 전체 내용을 읽어옵니다.
@@ -81,86 +81,86 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
 export function registerIpcProfile(store: Store) {
   ipcMainListener('get-profileList', () => {
     const profileList = store.get('profileList');
-    return profileList
+    return profileList;
   });
-  ipcMainListenerSync('set-profileList', (data) => {
+  ipcMainListenerSync('set-profileList', data => {
     store.set('profileList', data);
-    return 'set-profileList'
+    return 'set-profileList';
   });
   ipcMainListener('get-profileSession', () => {
     const profileSession = store.get('profileSession');
-    return profileSession
+    return profileSession;
   });
-  ipcMainListenerSync('set-profileSession', (data) => {
+  ipcMainListenerSync('set-profileSession', data => {
     store.set('profileSession', data);
-    return 'set-profileSession'
+    return 'set-profileSession';
   });
   ipcMainListener('get-profileSessions', () => {
     const profileSessions = store.get('profileSessions');
-    return profileSessions
+    return profileSessions;
   });
-  ipcMainListenerSync('set-profileSessions', (data) => {
+  ipcMainListenerSync('set-profileSessions', data => {
     store.set('profileSessions', data);
-    return 'set-profileSessions'
+    return 'set-profileSessions';
   });
   ipcMainListener('init-profiles', async ({ event }) => {
-    const profiles = ["dev", "qa", "stage", "prod"];
-    // let existingProfiles: ProfileStorage = {};    
+    const profiles = ['dev', 'qa', 'stage', 'prod'];
+    // let existingProfiles: ProfileStorage = {};
     let existingProfiles: ConfigureProfile[] = [];
     let idx = 0;
 
-      const data = fs.readFileSync(credentialsFilePath, "utf8");
-      for (const profile of profiles) {
-        if (data.includes(`[${profile}]`)) {
-          existingProfiles.push({
-            idx: idx++, // idx 값 할당 후 증가
-            profileName: profile, // 프로필 이름 추가
-            accountId: "", // AWS 계정 ID 초기화
-            roles: [], // 역할 리스트 초기화
-          });
-        }
-      };
-      // 초기 프로파일 리스트를 전송합니다.
-      event.reply('init-profiles', successMessage(existingProfiles));
-      // 오래 걸리는 작업을 처리합니다.
-      for (const profile of existingProfiles) {
-        const { accountId, roles } = await initProfile(profile.profileName);
-        // 기존에 추가된 프로파일 정보를 업데이트합니다.
-        profile.accountId = accountId;
-        profile.roles = roles;
-      };
-      // 업데이트된 프로파일 리스트를 전송합니다.
-      return existingProfiles;
+    const data = fs.readFileSync(credentialsFilePath, 'utf8');
+    for (const profile of profiles) {
+      if (data.includes(`[${profile}]`)) {
+        existingProfiles.push({
+          idx: idx++, // idx 값 할당 후 증가
+          profileName: profile, // 프로필 이름 추가
+          accountId: '', // AWS 계정 ID 초기화
+          roles: [], // 역할 리스트 초기화
+        });
+      }
+    }
+    // 초기 프로파일 리스트를 전송합니다.
+    event.reply('init-profiles', successMessage(existingProfiles));
+    // 오래 걸리는 작업을 처리합니다.
+    for (const profile of existingProfiles) {
+      const { accountId, roles } = await initProfile(profile.profileName);
+      // 기존에 추가된 프로파일 정보를 업데이트합니다.
+      profile.accountId = accountId;
+      profile.roles = roles;
+    }
+    // 업데이트된 프로파일 리스트를 전송합니다.
+    return existingProfiles;
   });
 
   ipcMainListener('add-profile', async ({ data }) => {
-      const profileName = data.profileName;
-      const credentialsContent = `[${profileName}]
+    const profileName = data.profileName;
+    const credentialsContent = `[${profileName}]
 aws_access_key_id=${data.accessKeyId}
 aws_secret_access_key=${data.secretAccessKey}`;
-      const configContent = `[profile ${profileName}]
+    const configContent = `[profile ${profileName}]
 region = ap-northeast-2
 output = json`;
-      let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
-      if (fileContent.includes(profileName)) {
-        await Promise.all([
-          updateProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
-          updateProfileInFile(configFilePath, `[profile ${profileName}]`, `[profile ${profileName}]`),
-        ]);
-      } else {
-        await Promise.all([
-          appendProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
-          appendProfileInFile(configFilePath, `[profile ${profileName}]`, configContent)
-        ]);
-      }
-      const { accountId, roles } = await initProfile(profileName);
-      return { accountId, roles };
+    let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
+    if (fileContent.includes(profileName)) {
+      await Promise.all([
+        updateProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
+        updateProfileInFile(configFilePath, `[profile ${profileName}]`, `[profile ${profileName}]`),
+      ]);
+    } else {
+      await Promise.all([
+        appendProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
+        appendProfileInFile(configFilePath, `[profile ${profileName}]`, configContent),
+      ]);
+    }
+    const { accountId, roles } = await initProfile(profileName);
+    return { accountId, roles };
   });
 
   ipcMainListener('delete-profile', async ({ data }) => {
     await Promise.all([
       deleteProfileInFile(credentialsFilePath, `[${data}]`),
-      deleteProfileInFile(configFilePath, `[profile ${data}]`)
+      deleteProfileInFile(configFilePath, `[profile ${data}]`),
     ]);
     return data;
   });
@@ -178,19 +178,19 @@ output = json`;
 aws_access_key_id=${accessKeyId}
 aws_secret_access_key=${secretAccessKey}`;
     }
-      await Promise.all([
-        updateProfileInFile(credentialsFilePath, `[${oldProfileName}]`, credentialsContent),
-        updateProfileInFile(configFilePath, `[profile ${oldProfileName}]`, `[profile ${profileName}]`),
-      ]);
-      const { accountId, roles } = await initProfile(profileName);
-      return {
-        oldProfileName: profileName,
-        newProfileData: {
-          profileName,
-          accountId,
-          roles
-        }
-      };
+    await Promise.all([
+      updateProfileInFile(credentialsFilePath, `[${oldProfileName}]`, credentialsContent),
+      updateProfileInFile(configFilePath, `[profile ${oldProfileName}]`, `[profile ${profileName}]`),
+    ]);
+    const { accountId, roles } = await initProfile(profileName);
+    return {
+      oldProfileName: profileName,
+      newProfileData: {
+        profileName,
+        accountId,
+        roles,
+      },
+    };
   });
 
   async function handleAssumeRole(data: AssumeRoleData) {
@@ -202,32 +202,32 @@ aws_secret_access_key=${secretAccessKey}`;
     const tokenCode = data?.tokenCode;
     const credentials = await getAwsCredentials(profileName);
     const config = { credentials };
-    const getUser = await getUserName(config)
+    const getUser = await getUserName(config);
     if (!getUser || !getUser.User) {
       throw new Error('Failed to get user information');
     }
-    const userName = getUser.User.UserName as string
+    const userName = getUser.User.UserName as string;
     let input: AssumeRoleInput = {
-      RoleArn: "",
-      RoleSessionName: "",
-      DurationSeconds: 0
-    }
+      RoleArn: '',
+      RoleSessionName: '',
+      DurationSeconds: 0,
+    };
     if (tokenCode) {
       input = {
         RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
         RoleSessionName: userName,
         DurationSeconds: 3600,
         SerialNumber: `arn:aws:iam::${accountId}:mfa/${userName}`,
-        TokenCode: "123456", // 브라우저에서 입력한 값으로 변경해야 함
-      }
+        TokenCode: '123456', // 브라우저에서 입력한 값으로 변경해야 함
+      };
     } else {
       input = {
         RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
         RoleSessionName: userName,
         DurationSeconds: 3600,
-      }
+      };
     }
-    const assumeRoleResponse = await assumeRole(config, input)
+    const assumeRoleResponse = await assumeRole(config, input);
     if (!assumeRoleResponse || !assumeRoleResponse.Credentials) {
       throw new Error('Failed to assume role');
     }
@@ -245,17 +245,17 @@ output = json`;
 
     let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
     if (fileContent.includes(sessionProfileName)) {
-      await updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent)
+      await updateProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent);
     } else {
       await Promise.all([
         appendProfileInFile(credentialsFilePath, `[${sessionProfileName}]`, credentialsContent),
-        appendProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent)
+        appendProfileInFile(configFilePath, `[profile ${sessionProfileName}]`, configContent),
       ]);
     }
     if (fileContent.includes('[default]')) {
-      await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+      await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent);
     } else {
-      await appendProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+      await appendProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent);
     }
     return profileName;
   }
@@ -282,7 +282,7 @@ output = json`;
 aws_access_key_id=${credentials.accessKeyId}
 aws_secret_access_key=${credentials.secretAccessKey}
 aws_session_token=${credentials.sessionToken}`;
-    await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent)
+    await updateProfileInFile(credentialsFilePath, '[default]', defaultCredentialsContent);
     return sessionProfileName;
   });
-};
+}

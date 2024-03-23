@@ -11,7 +11,10 @@ export function ipcParser(request: string) {
   return parsedData;
 }
 
-export async function ipcMainListener(eventName: string, processLogic: ({ data, event }: {data: any, event: Electron.IpcMainEvent}) => Promise<string | object>) {
+export async function ipcMainListener(
+  eventName: string,
+  processLogic: ({ data, event }: { data: any; event: Electron.IpcMainEvent }) => Promise<string | object>,
+) {
   ipcMain.on(eventName, async (event, request) => {
     try {
       const data = ipcParser(request);

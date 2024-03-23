@@ -84,12 +84,12 @@ const DatabaseTableRow = ({ database, isExpanded, toggleExpand }: { database: Da
           {database.Role == 'Cluster'
             ? (isExpanded
               ? <button onClick={() => toggleExpand(database.Identifier)}>
-                  <MinusSquare className="h-5 w-5" />
-                </button>
+                <MinusSquare className="h-5 w-5" />
+              </button>
               : <button onClick={() => toggleExpand(database.Identifier)}>
-                  <PlusSquare className="h-5 w-5" />
-                </button>
-              )
+                <PlusSquare className="h-5 w-5" />
+              </button>
+            )
             : <></>
           }
         </TableCell>
@@ -132,8 +132,8 @@ const DatabaseTableRow = ({ database, isExpanded, toggleExpand }: { database: Da
             <Tooltip>
               <TooltipTrigger asChild>
                 {isDatabaseHealthy(database.Status)
-                ? <CheckCircle2 className="h-5 w-5 text-green-600" />
-                : <XCircle className="h-5 w-5 text-gray-400" />
+                  ? <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  : <XCircle className="h-5 w-5 text-gray-400" />
                 }
               </TooltipTrigger>
               <TooltipContent>
@@ -234,7 +234,7 @@ const InstanceRows = ({ instances, updateDatabaseField }: { instances: Database[
                     ? (isDatabaseHealthy(instance.Status)
                       ? <CheckCircle2 className="h-5 w-5 text-green-600" />
                       : <XCircle className="h-5 w-5 text-gray-400" />
-                      )
+                    )
                     : <></>
                   }
                 </TooltipTrigger>

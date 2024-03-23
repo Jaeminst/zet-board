@@ -1,7 +1,5 @@
-const ipcTunnelingEvents = [
-  'tunneling',
-] as const;
-type ipcTunneling = typeof ipcTunnelingEvents[number];
+const ipcTunnelingEvents = ['tunneling'] as const;
+type ipcTunneling = (typeof ipcTunnelingEvents)[number];
 
 interface TunnelingData {
   type: string;

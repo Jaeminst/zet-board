@@ -48,11 +48,11 @@ export default function DatabasePage() {
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
         <DatabaseTable databases={databaseSearchList} />
         {isRefresh
-        ? <Button className="mt-4 ml-auto w-9/10" disabled>
+          ? <Button className="mt-4 ml-auto w-9/10" disabled>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Refresh
           </Button>
-        : <Button className="mt-4 ml-auto w-9/10" onClick={refreshDatabaseList}>
+          : <Button className="mt-4 ml-auto w-9/10" onClick={refreshDatabaseList}>
             <RotateCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>

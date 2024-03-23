@@ -1,10 +1,4 @@
-import {
-  IAMClient,
-  GetUserCommand,
-  type GetUserResponse,
-  ListRolesCommand,
-  type Role,
-} from "@aws-sdk/client-iam";
+import { IAMClient, GetUserCommand, type GetUserResponse, ListRolesCommand, type Role } from '@aws-sdk/client-iam';
 
 interface ClientConfig {
   credentials: {
@@ -43,10 +37,7 @@ export async function getUserName(config: ClientConfig): Promise<GetUserResponse
  * @returns {Promise<string[]>} [ "STRING", ... ] }
  */
 
-export async function importListRoles(
-  config: ClientConfig,
-  userName: string
-): Promise<string[]> {
+export async function importListRoles(config: ClientConfig, userName: string): Promise<string[]> {
   const client = new IAMClient(config);
   const command = new ListRolesCommand({});
   const response = await client.send(command);
@@ -55,18 +46,15 @@ export async function importListRoles(
 
   for (const role of roles) {
     const roleName = role.RoleName as string;
-    const decodeRole = decodeURIComponent(role.AssumeRolePolicyDocument || "");
+    const decodeRole = decodeURIComponent(role.AssumeRolePolicyDocument || '');
     const parseRole = JSON.parse(decodeRole);
 
     for (const statement of parseRole.Statement) {
       const allowUsers = statement.Principal.AWS;
 
-      if (typeof allowUsers === "string" && allowUsers.endsWith(userName)) {
+      if (typeof allowUsers === 'string' && allowUsers.endsWith(userName)) {
         filteredRoles.push(roleName);
-      } else if (
-        Array.isArray(allowUsers) &&
-        allowUsers.some((arn) => arn.endsWith(userName))
-      ) {
+      } else if (Array.isArray(allowUsers) && allowUsers.some(arn => arn.endsWith(userName))) {
         filteredRoles.push(roleName);
       }
     }

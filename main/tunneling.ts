@@ -1,16 +1,17 @@
-import { ipcMainListener } from "./utils/ipc";
-import Store from "./utils/store";
-import { getAwsCredentials } from "./utils/credentials";
-import { getInstanceId } from "./aws/ec2Client";
-import { startSession, terminateSession } from "./aws/ssmClient";
-import { spawn } from "child_process";
-import { setRepeater } from "./utils/setTimer";
-import { getDate } from "./utils/date";
-import systeminformation from "systeminformation";
+import { ipcMainListener } from './utils/ipc';
+import Store from './utils/store';
+import { getAwsCredentials } from './utils/credentials';
+import { getInstanceId } from './aws/ec2Client';
+import { startSession, terminateSession } from './aws/ssmClient';
+import { spawn } from 'child_process';
+import { setRepeater } from './utils/setTimer';
+import { getDate } from './utils/date';
+import systeminformation from 'systeminformation';
 
-const sessionManagerPluginPath = process.platform === 'win32'
-? `"C:/Program Files/Amazon/SessionManagerPlugin/bin/session-manager-plugin.exe"`
-: `/usr/local/bin/session-manager-plugin`;
+const sessionManagerPluginPath =
+  process.platform === 'win32'
+    ? `"C:/Program Files/Amazon/SessionManagerPlugin/bin/session-manager-plugin.exe"`
+    : `/usr/local/bin/session-manager-plugin`;
 const options = process.platform === 'win32' ? { shell: true } : {};
 
 export function registerIpcTunneling(store: Store) {
@@ -31,60 +32,62 @@ export function registerIpcTunneling(store: Store) {
         const databaseTunnel = async () => {
           const tunnelingStore = store.get('tunneling') || {};
           if (!tunnelingStore[profileName]) {
-              tunnelingStore[profileName] = {};
-          };
+            tunnelingStore[profileName] = {};
+          }
           if (tunnelingStore[profileName]?.[address]) {
             await terminateSession(config, { SessionId: tunnelingStore[profileName][address] });
-          };
-          const instanceId = await getInstanceId(config, 'bastion-host')
+          }
+          const instanceId = await getInstanceId(config, 'bastion-host');
           const startSessionResponse = await startSession(config, {
             Target: instanceId,
-            DocumentName: "AWS-StartPortForwardingSessionToRemoteHost",
+            DocumentName: 'AWS-StartPortForwardingSessionToRemoteHost',
             Parameters: {
-              "localPortNumber": [localPort],
-              "host": [address],
-              "portNumber": [port.toString()],
+              localPortNumber: [localPort],
+              host: [address],
+              portNumber: [port.toString()],
             },
-          })
+          });
           const sessionId = startSessionResponse.SessionId;
-          const sessionManagerPluginArgs = process.platform === 'win32'
-          ? [
-            `"${JSON.stringify(JSON.stringify(startSessionResponse))}"`,
-            "ap-northeast-2",
-            "StartSession",
-            "default",
-            `"${JSON.stringify(JSON.stringify({Target: instanceId}))}"`,
-            "https://ssm.ap-northeast-2.amazonaws.com"
-          ]
-          : [
-            `${JSON.stringify(startSessionResponse)}`,
-            "ap-northeast-2",
-            "StartSession",
-            "default",
-            `${JSON.stringify({Target: instanceId})}`,
-            "https://ssm.ap-northeast-2.amazonaws.com"
-          ];
+          const sessionManagerPluginArgs =
+            process.platform === 'win32'
+              ? [
+                  `"${JSON.stringify(JSON.stringify(startSessionResponse))}"`,
+                  'ap-northeast-2',
+                  'StartSession',
+                  'default',
+                  `"${JSON.stringify(JSON.stringify({ Target: instanceId }))}"`,
+                  'https://ssm.ap-northeast-2.amazonaws.com',
+                ]
+              : [
+                  `${JSON.stringify(startSessionResponse)}`,
+                  'ap-northeast-2',
+                  'StartSession',
+                  'default',
+                  `${JSON.stringify({ Target: instanceId })}`,
+                  'https://ssm.ap-northeast-2.amazonaws.com',
+                ];
           tunnelingStore[profileName][address] = sessionId;
           store.set('tunneling', tunnelingStore);
-          spawn(
-            sessionManagerPluginPath,
-            sessionManagerPluginArgs,
-            options
-          );
+          spawn(sessionManagerPluginPath, sessionManagerPluginArgs, options);
         };
         await databaseTunnel();
         // 포트 상태를 확인하는 함수
         const checkPortStatus = async (port: string): Promise<boolean> => {
           const networkConnections = await systeminformation.networkConnections();
-          return networkConnections.find((networkConnection) => {
+          return (
+            networkConnections.find(networkConnection => {
               return networkConnection.localPort === String(port);
-          }) !== undefined;
+            }) !== undefined
+          );
         };
         const nowString = getDate();
         setRepeater('10s', async () => {
           const tunnelingStore = store.get('tunneling');
-          if (tunnelingStore[profileName]?.[address] && store.get('profileSession') === profileName || !(new Date().getTime() - new Date(nowString).getTime() >= 60 * 60 * 1000)) {
-            if (!await checkPortStatus(localPort)) {
+          if (
+            (tunnelingStore[profileName]?.[address] && store.get('profileSession') === profileName) ||
+            !(new Date().getTime() - new Date(nowString).getTime() >= 60 * 60 * 1000)
+          ) {
+            if (!(await checkPortStatus(localPort))) {
               await databaseTunnel();
             }
             return true;

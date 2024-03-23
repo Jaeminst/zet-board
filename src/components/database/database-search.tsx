@@ -26,7 +26,7 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
 
       const settingsMatch = db.Endpoint.Address && databaseSettingList[db.Endpoint.Address] &&
         (databaseSettingList[db.Endpoint.Address].alias?.toLowerCase().includes(search) ||
-        databaseSettingList[db.Endpoint.Address].localPort?.toLowerCase().includes(search));
+          databaseSettingList[db.Endpoint.Address].localPort?.toLowerCase().includes(search));
 
       if (matchInDb || settingsMatch) {
         return [db];
@@ -37,11 +37,11 @@ export default function DatabaseSearch({ disabled }: { disabled?: boolean }) {
           const instanceMatch = instance.Identifier.toLowerCase().includes(search) ||
             instance.Engine.toLowerCase().includes(search) ||
             instance.Size.toString().toLowerCase().includes(search);
-  
+
           const instanceSettingsMatch = instance.Endpoint.Address && databaseSettingList[instance.Endpoint.Address] &&
             (databaseSettingList[instance.Endpoint.Address].alias?.toLowerCase().includes(search) ||
-            databaseSettingList[instance.Endpoint.Address].localPort?.toLowerCase().includes(search));
-  
+              databaseSettingList[instance.Endpoint.Address].localPort?.toLowerCase().includes(search));
+
           return instanceMatch || instanceSettingsMatch;
         });
         if (matchedInstances.length > 0) {

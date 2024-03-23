@@ -1,8 +1,7 @@
-import { describeClusters, describeInstances } from "./aws/rdsClient";
-import { getAwsCredentials } from "./utils/credentials";
-import { ipcMainListener, ipcMainListenerSync } from "./utils/ipc";
-import Store from "./utils/store";
-
+import { describeClusters, describeInstances } from './aws/rdsClient';
+import { getAwsCredentials } from './utils/credentials';
+import { ipcMainListener, ipcMainListenerSync } from './utils/ipc';
+import Store from './utils/store';
 
 function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
   // 인스턴스 매핑 생성
@@ -31,14 +30,14 @@ function mergeData(clusters: DescribeCluster[], instances: DescribeInstance[]) {
       Identifier: `${cluster.Identifier}-ro`,
       Endpoint: {
         Address: cluster.ReaderEndpoint,
-        Port: cluster.Endpoint.Port
+        Port: cluster.Endpoint.Port,
       },
       Status: '',
       Engine: '',
       EngineVersion: '',
       Size: '',
-      Role: 'Cluster-RO'
-    })
+      Role: 'Cluster-RO',
+    });
 
     // DBClusterMembers 정보를 제외하고 나머지 정보와 함께 새 객체 생성
     return { ...rest, Instances: clusterInstances };
@@ -78,19 +77,19 @@ export function registerIpcDatabase(store: Store) {
   store.set('databaseSettings', databaseSettings);
   ipcMainListener('get-databaseList', () => {
     const databaseList = store.get('databaseList');
-    return databaseList
+    return databaseList;
   });
-  ipcMainListenerSync('set-databaseList', (data) => {
+  ipcMainListenerSync('set-databaseList', data => {
     store.set('databaseList', data);
-    return 'set-databaseList'
+    return 'set-databaseList';
   });
   ipcMainListener('get-databaseSettings', () => {
     const databaseSettings = store.get('databaseSettings');
-    return databaseSettings
+    return databaseSettings;
   });
-  ipcMainListenerSync('set-databaseSettings', (data) => {
+  ipcMainListenerSync('set-databaseSettings', data => {
     store.set('databaseSettings', data);
-    return 'set-databaseSettings'
+    return 'set-databaseSettings';
   });
   ipcMainListener('init-databases', async ({ data }) => {
     const profileName = data.profileName;
@@ -99,7 +98,7 @@ export function registerIpcDatabase(store: Store) {
     const credentials = await getAwsCredentials(sessionProfileName);
     const config = { credentials };
 
-    const responseClusters = await describeClusters(config, {})
+    const responseClusters = await describeClusters(config, {});
     if (!responseClusters || !responseClusters.DBClusters) {
       throw new Error('Failed to get instances');
     }
@@ -107,7 +106,7 @@ export function registerIpcDatabase(store: Store) {
       Identifier: cluster.DBClusterIdentifier,
       Endpoint: {
         Address: cluster.Endpoint,
-        Port: cluster.Port
+        Port: cluster.Port,
       },
       ReaderEndpoint: cluster.ReaderEndpoint,
       Status: cluster.Status,
@@ -115,10 +114,10 @@ export function registerIpcDatabase(store: Store) {
       EngineVersion: cluster.EngineVersion,
       Size: cluster.DBClusterMembers?.length,
       Role: 'Cluster',
-      DBClusterMembers: cluster.DBClusterMembers
+      DBClusterMembers: cluster.DBClusterMembers,
     }));
 
-    const responseInstances = await describeInstances(config, {})
+    const responseInstances = await describeInstances(config, {});
     if (!responseInstances || !responseInstances.DBInstances) {
       throw new Error('Failed to get instances');
     }
@@ -133,6 +132,6 @@ export function registerIpcDatabase(store: Store) {
     }));
 
     const mergedDataResult = mergeData(clusters, instances);
-    return mergedDataResult as DbEntity[]
+    return mergedDataResult as DbEntity[];
   });
-};
+}

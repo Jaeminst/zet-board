@@ -1,10 +1,10 @@
 import electron from 'electron';
-import { join } from "path";
-import fs from "fs";
+import { join } from 'path';
+import fs from 'fs';
 
 export default class Store {
   [x: string]: any;
-  constructor(opts: { configName: string; defaults: any; }) {
+  constructor(opts: { configName: string; defaults: any }) {
     // Renderer process has to get `app` module via `remote`, whereas the main process can get it directly
     // app.getPath('userData') will return a string of the user's app data directory path.
     const userDataPath = electron.app.getPath('userData');
@@ -33,7 +33,7 @@ function parseDataFile(filePath: string, defaults: any) {
   try {
     const data = fs.readFileSync(filePath, { encoding: 'utf8' });
     return JSON.parse(data);
-  } catch(error) {
+  } catch (error) {
     return defaults;
   }
 }

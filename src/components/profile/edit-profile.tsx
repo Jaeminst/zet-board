@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ProfileActionTypes } from "@/types/actions";
 import IpcRenderer from "@/lib/ipcRenderer";
 
-export function EditProfile({ profile }: EditProfileProps ) {
+export function EditProfile({ profile }: EditProfileProps) {
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
   const { dispatchProfile } = useProfile();
@@ -58,7 +58,7 @@ export function EditProfile({ profile }: EditProfileProps ) {
         };
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editProfile])
 
   return (
@@ -85,7 +85,7 @@ export function EditProfile({ profile }: EditProfileProps ) {
                 id="profileName"
                 placeholder="Enter your profile"
                 defaultValue={profile.profileName}
-                {...register('profileName',{
+                {...register('profileName', {
                   required: ' is required.',
                 })}
               />
@@ -99,7 +99,7 @@ export function EditProfile({ profile }: EditProfileProps ) {
                 id="accessKeyId"
                 placeholder={isAccessKeyFocused ? 'Enter your access key' : '********************'}
                 onFocus={handleFocus}
-                {...register('accessKeyId',{
+                {...register('accessKeyId', {
                   required: isAccessKeyFocused ? ' is required.' : false,
                 })}
               />
@@ -113,7 +113,7 @@ export function EditProfile({ profile }: EditProfileProps ) {
                 id="secretAccessKey"
                 placeholder={isSecretKeyFocused ? 'Enter your secret key' : '****************************************'}
                 onFocus={handleFocus}
-                {...register('secretAccessKey',{
+                {...register('secretAccessKey', {
                   required: isSecretKeyFocused ? ' is required.' : false,
                 })}
               />
