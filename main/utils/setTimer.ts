@@ -1,8 +1,20 @@
+type TimeScaleMap = {
+  [unit: string]: number;
+};
+
+const timeScaleMap: TimeScaleMap = {
+  s: 1000,
+  m: 1000 * 60,
+  h: 1000 * 60 * 60,
+  d: 1000 * 60 * 60 * 24,
+  w: 1000 * 60 * 60 * 24 * 7,
+};
+
 /**
  * 시간 단위에 따른 타이머 함수.
  * @param duration 문자열 형식의 지연 시간 (예: 1s, 1m, 1h, 1d, 1w).
  * @param callback 지연 시간 후 실행할 콜백 함수.
- * 
+ *
  * setTimer('1m30s', () => console.log('90 second passed'));
  */
 export function setTimer(duration: string, callback: () => void): void {
@@ -14,24 +26,7 @@ export function setTimer(duration: string, callback: () => void): void {
   while ((match = regex.exec(duration)) !== null) {
     const value = parseInt(match[1]);
     const unit = match[2];
-
-    switch(unit) {
-      case 's': // 초
-        timeInMs += value * 1000;
-        break;
-      case 'm': // 분
-        timeInMs += value * 1000 * 60;
-        break;
-      case 'h': // 시간
-        timeInMs += value * 1000 * 60 * 60;
-        break;
-      case 'd': // 일
-        timeInMs += value * 1000 * 60 * 60 * 24;
-        break;
-      case 'w': // 주
-        timeInMs += value * 1000 * 60 * 60 * 24 * 7;
-        break;
-    }
+    timeInMs += value * timeScaleMap[unit];
   }
 
   setTimeout(callback, timeInMs);
@@ -41,10 +36,13 @@ export function setTimer(duration: string, callback: () => void): void {
  * 시간 단위에 따른 리피터 함수.
  * @param duration 문자열 형식의 지연 시간 (예: 1s, 1m, 1h, 1d, 1w).
  * @param callback 지연 시간 마다 실행할 콜백 함수.
- * 
- * const intervalId = setRepeater('1m30s', () => console.log('90 second passed'));
- * 
- * clearInterval(intervalId);
+ *
+ * const intervalId = setRepeater('1m30s', () => {
+ *   console.log('90 second passed')
+ *   return true;
+ * });
+ *
+ * callback 함수 true 반환시 반복지속
  */
 export function setRepeater(duration: string, callback: () => Promise<boolean>): NodeJS.Timeout {
   const regex = /(\d+)(s|m|h|d|w)/g;
@@ -54,24 +52,7 @@ export function setRepeater(duration: string, callback: () => Promise<boolean>):
   while ((match = regex.exec(duration)) !== null) {
     const value = parseInt(match[1]);
     const unit = match[2];
-
-    switch(unit) {
-      case 's':
-        timeInMs += value * 1000;
-        break;
-      case 'm':
-        timeInMs += value * 1000 * 60;
-        break;
-      case 'h':
-        timeInMs += value * 1000 * 60 * 60;
-        break;
-      case 'd':
-        timeInMs += value * 1000 * 60 * 60 * 24;
-        break;
-      case 'w':
-        timeInMs += value * 1000 * 60 * 60 * 24 * 7;
-        break;
-    }
+    timeInMs += value * timeScaleMap[unit];
   }
 
   const intervalId = setInterval(async () => {
