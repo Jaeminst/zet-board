@@ -48,7 +48,7 @@ class AppUpdater {
               await exec(`rm -r /Applications/ZeT-Board.app`);
               await fs.rename(`${appPath}`, `/Applications/ZeT-Board.app`);
               await exec('defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock');
-              exec('killall ZeT-Board');
+              exec('killall "ZeT Board"');
             }
           } catch (error) {
             console.error('Error during download and update:', error);
