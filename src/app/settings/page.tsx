@@ -30,6 +30,13 @@ export default function SettingsPage() {
             onSave={(newValue: string) => updateSettingField('profile', 'duration', newValue)}
             disabled
           />
+          <SettingOption
+            type="EditableField"
+            name="Token Suffix"
+            value={'_token'}
+            onSave={(newValue: string) => updateSettingField('profile', 'tokenSuffix', newValue)}
+            disabled
+          />
         </SettingSection>
 
         {
