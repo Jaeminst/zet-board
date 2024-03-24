@@ -1,25 +1,35 @@
 'use client';
-import { Button } from "@/components/ui/button"
-import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog, DialogClose } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { FileEditIcon } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { FileEditIcon } from 'lucide-react';
 import { useProfile } from '@/contexts/ProfileContext';
-import { useForm } from 'react-hook-form'
-import { useCallback, useEffect, useState } from "react";
-import { ProfileActionTypes } from "@/types/actions";
-import IpcRenderer from "@/lib/ipcRenderer";
+import { useForm } from 'react-hook-form';
+import { useCallback, useEffect, useState } from 'react';
+import { ProfileActionTypes } from '@/types/actions';
+import IpcRenderer from '@/lib/ipcRenderer';
 
 export function EditProfile({ profile }: EditProfileProps) {
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ProfileCredentials>();
   const { dispatchProfile } = useProfile();
   const [editProfile, setEditProfile] = useState<ProfileCredentials>();
   const [isAccessKeyFocused, setAccessKeyFocused] = useState(false);
   const [isSecretKeyFocused, setSecretKeyFocused] = useState(false);
+  const [isSerialNumberFocused, setSerialNumberFocused] = useState(false);
 
   const handleFocus = useCallback(() => {
     setAccessKeyFocused(true);
     setSecretKeyFocused(true);
+  }, []);
+
+  const handleSerialNumberFocus = useCallback(() => {
+    setSerialNumberFocused(true);
   }, []);
 
   useEffect(() => {
@@ -27,6 +37,7 @@ export function EditProfile({ profile }: EditProfileProps) {
       reset();
       setAccessKeyFocused(false);
       setSecretKeyFocused(false);
+      setSerialNumberFocused(false);
     }
   }, [open, reset]);
 
@@ -44,22 +55,23 @@ export function EditProfile({ profile }: EditProfileProps) {
           oldProfileName: editProfile.oldProfileName as string,
           newProfileData: {
             profileName: editProfile.profileName,
-            accountId: "",
+            accountId: '',
             roles: [],
+            serialNumber: editProfile.serialNumber as string,
           },
         },
       });
-      IpcRenderer.updateProfile(editProfile, (updateProfile) => {
+      IpcRenderer.updateProfile(editProfile, updateProfile => {
         if (updateProfile) {
           dispatchProfile({
             type: ProfileActionTypes.UpdateProfile,
             payload: updateProfile as EditConfigureProfile,
           });
-        };
+        }
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editProfile])
+  }, [editProfile]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -69,7 +81,7 @@ export function EditProfile({ profile }: EditProfileProps) {
           <span className="sr-only">Edit</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-3/4 md:w-1/2 lg:w-1/3">
+      <DialogContent className="w-3/4 md:w-1/2 lg:w-1/2">
         <DialogHeader>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Profile</h3>
         </DialogHeader>
@@ -118,12 +130,29 @@ export function EditProfile({ profile }: EditProfileProps) {
                 })}
               />
             </div>
+            <div className="flex flex-col">
+              <label className="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" htmlFor="serialNumber">
+                SerialNumber
+                <span className="text-red-600">{errors.serialNumber?.message}</span>
+              </label>
+              <Input
+                id="serialNumber"
+                placeholder={'Enter Serial Number to use mfa'}
+                onFocus={handleSerialNumberFocus}
+                defaultValue={
+                  isSerialNumberFocused ? `arn:aws:iam::${profile.accountId}:mfa/` : profile.serialNumber ?? ''
+                }
+                {...register('serialNumber')}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="ml-auto">Enter</Button>
+            <Button type="submit" className="ml-auto">
+              Enter
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

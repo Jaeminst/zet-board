@@ -33,6 +33,7 @@ export interface UpdateProfileAction {
       profileName: string;
       accountId: string;
       roles: string[];
+      serialNumber: string;
     };
   };
 }

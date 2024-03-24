@@ -5,6 +5,7 @@ interface ProfileData {
   accountId: string;
   selectRole?: string;
   roles: string[];
+  serialNumber?: string;
 }
 
 interface Profile extends ProfileData {
@@ -26,6 +27,7 @@ interface EditConfigureProfile {
     profileName: string;
     accountId: string;
     roles: string[];
+    serialNumber: string;
   };
 }
 
@@ -42,13 +44,18 @@ interface ProfileCredentials {
   profileName: string;
   accessKeyId?: string;
   secretAccessKey?: string;
+  serialNumber?: string;
 }
 
 interface EditProfileProps {
-  profile: ProfileCredentials;
+  profile: Profile;
 }
 
 interface ProfileSession {
   profileName: string;
   createdAt: string;
+}
+
+interface OTP {
+  tokenCode: string;
 }

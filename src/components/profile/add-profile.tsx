@@ -1,18 +1,23 @@
 'use client';
-import { Button } from "@/components/ui/button"
-import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { PlusIcon } from "lucide-react"
-import { useForm } from 'react-hook-form'
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { DialogTrigger, DialogHeader, DialogFooter, DialogContent, Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { PlusIcon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
-import { useProfileSearch } from "@/contexts/ProfileSearchContext";
-import { ProfileActionTypes } from "@/types/actions";
-import IpcRenderer from "@/lib/ipcRenderer";
+import { useProfileSearch } from '@/contexts/ProfileSearchContext';
+import { ProfileActionTypes } from '@/types/actions';
+import IpcRenderer from '@/lib/ipcRenderer';
 
 export function AddProfile() {
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileCredentials>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ProfileCredentials>();
   const { profileList, dispatchProfile } = useProfile();
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
@@ -38,12 +43,14 @@ export function AddProfile() {
       const profile: Profile = {
         idx: profileList.length,
         profileName,
-        accountId: "",
-        roles: []
+        accountId: '',
+        roles: [],
+        selectRole: '',
+        serialNumber: '',
       };
       dispatchProfile({ type: ProfileActionTypes.AddProfile, payload: profile });
     }
-    IpcRenderer.addProfile(newProfile, (addProfile) => {
+    IpcRenderer.addProfile(newProfile, addProfile => {
       if (addProfile) {
         dispatchProfile({
           type: ProfileActionTypes.UpdateProfile,
@@ -53,6 +60,7 @@ export function AddProfile() {
               profileName,
               accountId: addProfile.accountId,
               roles: addProfile.roles,
+              serialNumber: '',
             },
           },
         });
@@ -68,7 +76,7 @@ export function AddProfile() {
           Add Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-3/4 md:w-1/2 lg:w-1/3">
+      <DialogContent className="w-3/4 md:w-1/2 lg:w-1/2">
         <DialogHeader>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Add Profile</h3>
         </DialogHeader>
@@ -115,10 +123,12 @@ export function AddProfile() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="ml-auto">Enter</Button>
+            <Button type="submit" className="ml-auto">
+              Enter
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

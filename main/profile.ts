@@ -199,10 +199,13 @@ aws_secret_access_key=${secretAccessKey}`;
 
   async function handleAssumeRole(data: AssumeRoleData) {
     const profileName = `${data.profileName}`;
-    const tokenSuffix = `${data.tokenSuffix}`;
+    const profileList = store.get('profileList') as Profile[];
+    const tokenSuffix = store.get('tokenSuffix');
     const sessionProfileName = `${profileName}${tokenSuffix}`;
-    const accountId = data.accountId;
-    const role = data.role;
+    const selectedProfile = profileList.find(profile => profile.profileName === profileName) as Profile;
+    const accountId = selectedProfile.accountId;
+    const role = selectedProfile.selectRole;
+    const serialNumber = selectedProfile.serialNumber;
     const tokenCode = data?.tokenCode;
     const credentials = await getAwsCredentials(profileName);
     const config = { credentials };
@@ -221,8 +224,8 @@ aws_secret_access_key=${secretAccessKey}`;
         RoleArn: `arn:aws:iam::${accountId}:role/${role}`,
         RoleSessionName: userName,
         DurationSeconds: 3600,
-        SerialNumber: `arn:aws:iam::${accountId}:mfa/${userName}`,
-        TokenCode: '123456', // 브라우저에서 입력한 값으로 변경해야 함
+        SerialNumber: serialNumber,
+        TokenCode: tokenCode, // 브라우저에서 입력한 값으로 변경해야 함
       };
     } else {
       input = {

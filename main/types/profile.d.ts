@@ -15,6 +15,15 @@ const ipcProfileEvents = [
 ] as const;
 type ipcProfile = (typeof ipcProfileEvents)[number];
 
+interface Profile {
+  idx: number;
+  profileName: string;
+  accountId: string;
+  roles: string[];
+  selectRole: string;
+  serialNumber: string;
+}
+
 interface ConfigureProfile {
   idx?: number;
   profileName: string;
@@ -35,5 +44,6 @@ interface AssumeRoleData {
   tokenSuffix: string;
   accountId: string;
   role: string;
+  serialNumber: string;
   tokenCode: string;
 }

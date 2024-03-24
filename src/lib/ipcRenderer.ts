@@ -77,14 +77,12 @@ export default class IpcRenderer {
     window.electron.profile.sendSync('set-profileSessions', JSON.stringify(profileSessions));
   }
 
-  static assumeRole(profileSession: string, selectedProfile: Profile, callback: (data: string) => void) {
+  static assumeRole(profileSession: string, tokenCode: string, callback: (data: string) => void) {
     window.electron.profile.send(
       'assume-role',
       JSON.stringify({
         profileName: profileSession,
-        tokenSuffix: `_token`,
-        accountId: selectedProfile.accountId,
-        role: selectedProfile.selectRole,
+        tokenCode,
       }),
     );
     window.electron.profile.once('assume-role', (profileSession: string) => {
