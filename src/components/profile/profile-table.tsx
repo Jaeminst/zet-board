@@ -12,6 +12,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 import { copyToClipboard } from '@/lib/clipboard';
 import { ProfileActionTypes } from '@/types/actions';
 import IpcRenderer from '@/lib/ipcRenderer';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { TriangleAlert } from 'lucide-react';
 
 export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
   const { profileList, dispatchProfile } = useProfile();
@@ -89,10 +101,28 @@ export default function ProfileTable({ profiles }: { profiles: Profile[] }) {
             </TableCell>
             <TableCell className="flex flex-row justify-center items-center p-2">
               <EditProfile profile={profile} />
-              <Button size="icon" variant="ghost" onClick={() => handleDeleteProfile(profile.idx)}>
-                <TrashIcon className="w-4 h-4" />
-                <span className="sr-only">Delete</span>
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="icon" variant="ghost">
+                    <TrashIcon className="w-4 h-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <TriangleAlert /> Do you really delete {profile.profileName}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your profile from the ~/.aws/credentials file.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDeleteProfile(profile.idx)}>Continue</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <div className="w-12">
                 <Button className="w-12 h-7" size="icon" variant="ghost" onClick={() => dispatchProfile({ type: ProfileActionTypes.SwapProfileIdxUp, payload: profile.idx })}>
                   <ChevronUp className="w-4 h-4" />
