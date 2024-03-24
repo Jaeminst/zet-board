@@ -134,6 +134,9 @@ const createWindow = () => {
     win.loadURL('app://./home.html');
   }
 
+  // 최소 크기 설정
+  win.setMinimumSize(900, 500);
+
   win.on('resize', () => {
     if (!win) {
       throw new Error('"win" is not defined');
