@@ -62,21 +62,24 @@ async function updateProfileInFile(filePath: string, oldProfileName: string, new
   // 프로필의 시작 위치를 찾습니다.
   const startIdx = fileContent.indexOf(oldProfileName);
   if (startIdx === -1) {
-    throw new Error('Profile not found');
+    // 프로파일이 파일에 존재하지 않는 경우, 새로운 프로파일 데이터를 파일 끝에 추가합니다.
+    // 파일의 마지막이 줄바꿈으로 끝나지 않는 경우, 줄바꿈을 추가하여 새로운 프로파일 데이터와 분리합니다.
+    const contentToAdd = fileContent.endsWith('\n') ? newProfileData : `\n${newProfileData}`;
+    fs.appendFileSync(filePath, contentToAdd, { encoding: 'utf-8' });
+  } else {
+    // 다음 프로필의 시작 위치를 찾습니다. 없다면 파일 끝으로 간주합니다.
+    let endIdx = fileContent.indexOf('\n', startIdx + oldProfileName.length);
+    if (newProfileData.includes('\n')) {
+      endIdx = fileContent.indexOf('\n[', startIdx + oldProfileName.length);
+    }
+    endIdx = endIdx !== -1 ? endIdx : fileContent.length;
+
+    // 시작 위치와 끝 위치를 기준으로 파일 내용을 교체합니다.
+    fileContent = fileContent.substring(0, startIdx) + newProfileData + fileContent.substring(endIdx);
+
+    // 변경된 내용으로 파일을 다시 씁니다.
+    fs.writeFileSync(filePath, fileContent, { encoding: 'utf-8' });
   }
-
-  // 다음 프로필의 시작 위치를 찾습니다. 없다면 파일 끝으로 간주합니다.
-  let endIdx = fileContent.indexOf('\n', startIdx + oldProfileName.length);
-  if (newProfileData.includes('\n')) {
-    endIdx = fileContent.indexOf('\n[', startIdx + oldProfileName.length);
-  }
-  endIdx = endIdx !== -1 ? endIdx : fileContent.length;
-
-  // 시작 위치와 끝 위치를 기준으로 파일 내용을 교체합니다.
-  fileContent = fileContent.substring(0, startIdx) + newProfileData + fileContent.substring(endIdx);
-
-  // 변경된 내용으로 파일을 다시 씁니다.
-  fs.writeFileSync(filePath, fileContent, { encoding: 'utf-8' });
 }
 
 export function registerIpcProfile(store: Store) {
@@ -143,7 +146,7 @@ aws_secret_access_key=${data.secretAccessKey}`;
 region = ap-northeast-2
 output = json`;
     let fileContent = fs.readFileSync(credentialsFilePath, 'utf8');
-    if (fileContent.includes(profileName)) {
+    if (fileContent.includes(`[${profileName}]`)) {
       await Promise.all([
         updateProfileInFile(credentialsFilePath, `[${profileName}]`, credentialsContent),
         updateProfileInFile(configFilePath, `[profile ${profileName}]`, `[profile ${profileName}]`),
