@@ -35,7 +35,7 @@
     "clean": "ts-node ./release/scripts/clean.js",
     "package": "npm run clean && npm run build && electron-builder --publish never",
     "release": "npm run clean && npm run build && electron-builder --publish onTagOrDraft",
-    "tag": "npm version patch && git push origin main && git push origin --tags"
+    "tag": "npm run lint && npm version patch && git push origin main && git push origin --tags"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.529.1",
