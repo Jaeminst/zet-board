@@ -3,17 +3,20 @@ import { ipcParser } from '@/lib/ipcParser';
 import { type ProfileAction, ProfileActionTypes } from '@/types/actions';
 import IpcRenderer from '@/lib/ipcRenderer';
 
-const ProfileContext = createContext<{
-  profileList: Profile[];
-  dispatchProfile: React.Dispatch<ProfileAction>;
-} | undefined>(undefined);
+const ProfileContext = createContext<
+  | {
+      profileList: Profile[];
+      dispatchProfile: React.Dispatch<ProfileAction>;
+    }
+  | undefined
+>(undefined);
 
 // 리듀서 함수
 function profileReducer(profileList: Profile[], action: ProfileAction): Profile[] {
   switch (action.type) {
     case ProfileActionTypes.SelectRole:
       return profileList.map(profile =>
-        profile.idx === action.payload.idx ? { ...profile, selectRole: action.payload.role } : profile
+        profile.idx === action.payload.idx ? { ...profile, selectRole: action.payload.role } : profile,
       );
     case ProfileActionTypes.SetProfileList:
       return action.payload;
@@ -23,7 +26,7 @@ function profileReducer(profileList: Profile[], action: ProfileAction): Profile[
       return profileList.map(profile =>
         profile.profileName === action.payload.oldProfileName
           ? { ...profile, ...action.payload.newProfileData }
-          : profile
+          : profile,
       );
     case ProfileActionTypes.DeleteProfile:
       const filteredProfiles = profileList.filter(profile => profile.profileName !== action.payload);
@@ -49,7 +52,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profileList, dispatchProfile] = useReducer(profileReducer, []);
 
   useEffect(() => {
-    IpcRenderer.getProfileList((initProfiles) => {
+    IpcRenderer.getProfileList(initProfiles => {
       if (!initProfiles || initProfiles.length === 0) {
         let messageCount = 0;
         const maxMessages = 2;
@@ -72,11 +75,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     IpcRenderer.setProfileList(profileList);
   }, [profileList]);
 
-  return (
-    <ProfileContext.Provider value={{ profileList, dispatchProfile }}>
-      {children}
-    </ProfileContext.Provider>
-  );
+  return <ProfileContext.Provider value={{ profileList, dispatchProfile }}>{children}</ProfileContext.Provider>;
 }
 
 export function useProfile() {

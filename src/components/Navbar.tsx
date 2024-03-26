@@ -1,18 +1,16 @@
 'use client';
-import { useRouter } from 'next/navigation'
-import { DatabaseIcon, Package2Icon, SettingsIcon, UserIcon } from "lucide-react"
-import { Button } from "./ui/button";
+import { useRouter } from 'next/navigation';
+import { DatabaseIcon, Package2Icon, SettingsIcon, UserIcon } from 'lucide-react';
+import { Button } from './ui/button';
 import { toast } from 'sonner';
 import IpcRenderer from '@/lib/ipcRenderer';
-import Icon from 'public/icon.svg'
+import Icon from 'public/icon.svg';
 
 export function Navbar() {
-  const router = useRouter()
+  const router = useRouter();
   function validateLink(route: string) {
-    IpcRenderer.getProfileSession((initProfileSession) => {
-      initProfileSession !== 'Select Profile'
-        ? router.push(route)
-        : toast.error('Select Profile')
+    IpcRenderer.getProfileSession(initProfileSession => {
+      initProfileSession !== 'Select Profile' ? router.push(route) : toast.error('Select Profile');
     });
   }
   return (
@@ -27,7 +25,7 @@ export function Navbar() {
         <div className="flex-1">
           <nav className="grid items-start px-4 text-sm font-medium">
             <Button
-              variant='link'
+              variant="link"
               className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
               onClick={() => router.push('/')}
             >
@@ -35,7 +33,7 @@ export function Navbar() {
               Profile
             </Button>
             <Button
-              variant='link'
+              variant="link"
               className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
               onClick={() => validateLink('/database')}
             >
@@ -43,7 +41,7 @@ export function Navbar() {
               Database
             </Button>
             <Button
-              variant='link'
+              variant="link"
               className="flex justify-start items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
               onClick={() => validateLink('/settings')}
             >
@@ -54,5 +52,5 @@ export function Navbar() {
         </div>
       </div>
     </div>
-  )
+  );
 }

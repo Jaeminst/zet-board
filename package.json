@@ -28,7 +28,7 @@
     "dev": "cross-env NODE_ENV=development concurrently -k \"cross-env BROWSER=none npm run next:dev\" \"npm run electron:dev\"",
     "next:dev": "next dev",
     "electron:dev": "npm run build:main && wait-on tcp:3000 && electronmon -r ts-node/register/transpile-only .",
-    "lint": "next lint",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx} --fix",
     "build": "npm run build:main && next build",
     "build:main": "tsc -p main && npm run build:css",
     "build:css": "npx tailwindcss build --config tailwind.config.main.js -o ./main/tailwind.css --minify",

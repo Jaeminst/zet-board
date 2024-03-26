@@ -1,9 +1,19 @@
 'use client';
-import { useState, createContext, type Dispatch, type SetStateAction, type ReactNode, useContext, useEffect } from 'react';
+import {
+  useState,
+  createContext,
+  type Dispatch,
+  type SetStateAction,
+  type ReactNode,
+  useContext,
+  useEffect,
+} from 'react';
 import IpcRenderer from '@/lib/ipcRenderer';
 import { useProfileSession } from './ProfileSessionContext';
 
-const DatabaseSettingContext = createContext<[DatabaseSetting, Dispatch<SetStateAction<DatabaseSetting>>] | undefined>(undefined);
+const DatabaseSettingContext = createContext<[DatabaseSetting, Dispatch<SetStateAction<DatabaseSetting>>] | undefined>(
+  undefined,
+);
 
 export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
   const [databaseSettingList, setDatabaseSettingList] = useState<DatabaseSetting>({});
@@ -11,7 +21,7 @@ export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profileSession !== '' && profileSession !== 'Select Profile') {
-      IpcRenderer.getDatabaseSettings((databaseSettings) => {
+      IpcRenderer.getDatabaseSettings(databaseSettings => {
         setDatabaseSettingList(databaseSettings[profileSession]);
       });
     }
@@ -19,8 +29,8 @@ export function DatabaseSettingProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (databaseSettingList && profileSession !== '' && profileSession !== 'Select Profile') {
-      IpcRenderer.getDatabaseSettings((databaseSettings) => {
-        databaseSettings[profileSession] = databaseSettingList
+      IpcRenderer.getDatabaseSettings(databaseSettings => {
+        databaseSettings[profileSession] = databaseSettingList;
         IpcRenderer.setDatabaseSettings(databaseSettings);
       });
     }

@@ -29,14 +29,8 @@ export default function Search({ disabled }: { disabled?: boolean }) {
           Search
         </label>
         <div className="rounded-md shadow-sm">
-          <div
-            className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
-            aria-hidden="true"
-          >
-            <SearchIcon
-              className="mr-3 h-4 w-4 text-gray-500 dark:text-gray-400"
-              aria-hidden="true"
-            />
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3" aria-hidden="true">
+            <SearchIcon className="mr-3 h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
           </div>
           <Input
             id="search"
@@ -45,7 +39,7 @@ export default function Search({ disabled }: { disabled?: boolean }) {
             placeholder=""
             spellCheck={false}
             disabled={disabled}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
           />
         </div>
 
@@ -57,14 +51,7 @@ export default function Search({ disabled }: { disabled?: boolean }) {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path
                 className="opacity-75"
                 fill="currentColor"

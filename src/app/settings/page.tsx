@@ -1,14 +1,15 @@
 'use client';
-import { useCallback } from "react";
-import { UserIcon, GitCommitHorizontal } from "lucide-react"
-import { ProfileCombo } from "@/components/profile/profile-combo"
-import { SettingSection } from "@/components/setting/setting-section";
-import { SettingOption } from "@/components/setting/setting-option";
+import { useCallback } from 'react';
+import { UserIcon, GitCommitHorizontal } from 'lucide-react';
+import { ProfileCombo } from '@/components/profile/profile-combo';
+import { SettingSection } from '@/components/setting/setting-section';
+import { SettingOption } from '@/components/setting/setting-option';
 
 export default function SettingsPage() {
-  const updateSettingField = useCallback((category: string, field: keyof Setting[string], value: string | boolean) => {
-
-  }, []);
+  const updateSettingField = useCallback(
+    (category: string, field: keyof Setting[string], value: string | boolean) => {},
+    [],
+  );
 
   return (
     <div className="flex flex-col w-full">
@@ -68,6 +69,6 @@ export default function SettingsPage() {
           />
         </SettingSection>
       </main>
-    </div >
-  )
+    </div>
+  );
 }

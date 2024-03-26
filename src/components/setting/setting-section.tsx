@@ -1,5 +1,5 @@
 import React, { type FunctionComponent, type ReactNode } from 'react';
-import { Separator } from "@/components/ui/separator";
+import { Separator } from '@/components/ui/separator';
 
 interface SettingSectionProps {
   Icon: FunctionComponent<{ className?: string }>;
@@ -14,12 +14,10 @@ export function SettingSection({ Icon, title, children }: SettingSectionProps) {
     <div>
       <div className="flex justify-start items-center space-x-2 space-y-1">
         {IconElement}
-        <h4 className="text-medium font-medium leading-none">
-          {title}
-        </h4>
+        <h4 className="text-medium font-medium leading-none">{title}</h4>
       </div>
       <Separator className="my-4" />
       {children}
     </div>
   );
-};
+}

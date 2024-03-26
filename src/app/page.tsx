@@ -3,7 +3,7 @@ import { AddProfile } from '@/components/profile/add-profile';
 import { ProfileCombo } from '@/components/profile/profile-combo';
 import { IsLoadingTable } from '@/components/status/IsLoadingTable';
 import { useProfileSearch } from '@/contexts/ProfileSearchContext';
-import dynamic from 'next/dynamic'
+import dynamic from 'next/dynamic';
 const ProfileSearch = dynamic(() => import('@/components/profile/profile-search'), {
   ssr: false,
 });

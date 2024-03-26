@@ -1,5 +1,13 @@
 'use client';
-import { useState, createContext, type Dispatch, type SetStateAction, type ReactNode, useContext, useEffect } from 'react';
+import {
+  useState,
+  createContext,
+  type Dispatch,
+  type SetStateAction,
+  type ReactNode,
+  useContext,
+  useEffect,
+} from 'react';
 import { useProfileSession } from './ProfileSessionContext';
 import IpcRenderer from '@/lib/ipcRenderer';
 import { ipcParser } from '@/lib/ipcParser';
@@ -12,12 +20,15 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (profileSession !== '' && profileSession !== 'Select Profile') {
-      IpcRenderer.getDatabaseList((initDatabases) => {
+      IpcRenderer.getDatabaseList(initDatabases => {
         if (!initDatabases[profileSession]) {
-          window.electron.database.send('init-databases', JSON.stringify({
-            profileName: profileSession,
-            tokenSuffix: `_token`,
-          }));
+          window.electron.database.send(
+            'init-databases',
+            JSON.stringify({
+              profileName: profileSession,
+              tokenSuffix: `_token`,
+            }),
+          );
           window.electron.database.once('init-databases', (initDatabasesString: string) => {
             initDatabases[profileSession] = ipcParser(initDatabasesString) as Database[];
             setDatabaseList(initDatabases[profileSession]);
@@ -31,18 +42,14 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (databaseList && profileSession !== '' && profileSession !== 'Select Profile') {
-      IpcRenderer.getDatabaseList((databases) => {
-        databases[profileSession] = databaseList
+      IpcRenderer.getDatabaseList(databases => {
+        databases[profileSession] = databaseList;
         IpcRenderer.setDatabaseList(databases);
       });
     }
   }, [databaseList, profileSession]);
 
-  return (
-    <DatabaseContext.Provider value={[databaseList, setDatabaseList]}>
-      {children}
-    </DatabaseContext.Provider>
-  );
+  return <DatabaseContext.Provider value={[databaseList, setDatabaseList]}>{children}</DatabaseContext.Provider>;
 }
 
 export function useDatabase() {

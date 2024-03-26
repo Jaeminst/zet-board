@@ -1,7 +1,7 @@
 'use client';
-import Search from "@/components/Search";
-import { ProfileCombo } from "@/components/profile/profile-combo";
-import { IsLoadingTable } from "./IsLoadingTable";
+import Search from '@/components/Search';
+import { ProfileCombo } from '@/components/profile/profile-combo';
+import { IsLoadingTable } from './IsLoadingTable';
 
 export function IsLoading() {
   return (
@@ -14,5 +14,5 @@ export function IsLoading() {
         <IsLoadingTable />
       </main>
     </div>
-  )
+  );
 }
