@@ -32,7 +32,7 @@ type ipcDatabase = (typeof ipcDatabaseEvents)[number];
 const ipcTunnelingEvents = ['tunneling'] as const;
 type ipcTunneling = (typeof ipcTunnelingEvents)[number];
 
-const electronHandler = {
+export const electronHandler = {
   setTitle: (title: string) => ipcRenderer.send('set-title', title),
   ipcProfileEvents: ipcProfileEvents,
   profile: {
