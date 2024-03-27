@@ -10,6 +10,11 @@ import { getAwsCredentials } from './utils/credentials.js';
 import Store from './utils/store.js';
 import { getDate } from './utils/date.js';
 
+// NodeJS.ErrnoException 타입 가드 함수
+function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error;
+}
+
 // 자격 증명 파일 및 설정 파일 경로
 const credentialsFilePath = join(homedir(), '.aws', 'credentials');
 const configFilePath = join(homedir(), '.aws', 'config');
@@ -126,10 +131,6 @@ export function registerIpcProfile(store: Store) {
         }
       }
     } catch (error) {
-      // NodeJS.ErrnoException 타입 가드 함수
-      function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
-        return error instanceof Error && 'code' in error;
-      }
       if (isErrnoException(error) && error.code === 'ENOENT') {
         // 파일이 없을 때, 즉 ENOENT 오류가 발생했을 때 파일을 생성합니다.
         fs.writeFileSync(credentialsFilePath, '', 'utf8');
