@@ -3,13 +3,12 @@ import { ipcParser } from '@/lib/ipcParser';
 import { type ProfileAction, ProfileActionTypes } from '@/types/actions';
 import IpcRenderer from '@/lib/ipcRenderer';
 
-const ProfileContext = createContext<
-  | {
-      profileList: Profile[];
-      dispatchProfile: React.Dispatch<ProfileAction>;
-    }
-  | undefined
->(undefined);
+/* eslint-disable */
+const ProfileContext = createContext<{
+  profileList: Profile[];
+  dispatchProfile: React.Dispatch<ProfileAction>;
+} | undefined>(undefined);
+/* eslint-enable */
 
 // 리듀서 함수
 function profileReducer(profileList: Profile[], action: ProfileAction): Profile[] {
