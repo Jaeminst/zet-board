@@ -10,7 +10,7 @@ export default function ProfileSearch({ disabled }: { disabled?: boolean }) {
   const [profileSearchList, setProfileSearchList] = useProfileSearch();
 
   useLayoutEffect(() => {
-    if (!profileSearchList.length) {
+    if (!profileSearchList?.length) {
       setProfileSearchList(profileList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

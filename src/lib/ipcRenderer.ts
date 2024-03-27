@@ -6,11 +6,11 @@ export default class IpcRenderer {
   }
 
   static removeAllListeners(listener: ipcProfile | ipcDatabase) {
-    if (ipcProfileEvents.includes(listener as ipcProfile)) {
+    if (window.electron.ipcProfileEvents.includes(listener as ipcProfile)) {
       window.electron.profile.removeAllListeners(listener as ipcProfile);
       return;
     }
-    if (ipcDatabaseEvents.includes(listener as ipcDatabase)) {
+    if (window.electron.ipcDatabaseEvents.includes(listener as ipcDatabase)) {
       window.electron.database.removeAllListeners(listener as ipcDatabase);
       return;
     }

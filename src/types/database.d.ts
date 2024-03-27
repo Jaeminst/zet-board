@@ -1,4 +1,4 @@
-type ipcDatabase = (typeof ipcDatabaseEvents)[number];
+type ipcDatabase = (typeof window.electron.ipcDatabaseEvents)[number];
 
 interface Endpoint {
   Address: string;

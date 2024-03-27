@@ -2,8 +2,39 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
-const electronHandler = {
+const ipcProfileEvents = [
+  'init-profiles',
+  'add-profile',
+  'delete-profile',
+  'update-profile',
+  'assume-role',
+  'session-expired',
+  'default-profile',
+  'get-profileList',
+  'set-profileList',
+  'get-profileSession',
+  'set-profileSession',
+  'get-profileSessions',
+  'set-profileSessions',
+] as const;
+type ipcProfile = (typeof ipcProfileEvents)[number];
+
+const ipcDatabaseEvents = [
+  'init-databases',
+  'databases-metric',
+  'get-databaseList',
+  'set-databaseList',
+  'get-databaseSettings',
+  'set-databaseSettings',
+] as const;
+type ipcDatabase = (typeof ipcDatabaseEvents)[number];
+
+const ipcTunnelingEvents = ['tunneling'] as const;
+type ipcTunneling = (typeof ipcTunnelingEvents)[number];
+
+export const electronHandler = {
   setTitle: (title: string) => ipcRenderer.send('set-title', title),
+  ipcProfileEvents: ipcProfileEvents,
   profile: {
     sendSync(channel: ipcProfile, ...args: string[]): string {
       return ipcRenderer.sendSync(channel, ...args);
@@ -28,6 +59,7 @@ const electronHandler = {
       ipcRenderer.removeAllListeners(channel);
     },
   },
+  ipcDatabaseEvents: ipcDatabaseEvents,
   database: {
     sendSync(channel: ipcDatabase, ...args: string[]) {
       ipcRenderer.sendSync(channel, ...args);
@@ -52,6 +84,7 @@ const electronHandler = {
       ipcRenderer.removeAllListeners(channel);
     },
   },
+  ipcTunnelingEvents: ipcTunnelingEvents,
   tunneling: {
     send(channel: ipcTunneling, ...args: string[]) {
       ipcRenderer.send(channel, ...args);

@@ -1,4 +1,4 @@
-type ipcProfile = (typeof ipcProfileEvents)[number];
+type ipcProfile = (typeof window.electron.ipcProfileEvents)[number];
 
 interface ProfileData {
   idx: number;

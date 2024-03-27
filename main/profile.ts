@@ -113,15 +113,32 @@ export function registerIpcProfile(store: Store) {
     let existingProfiles: ConfigureProfile[] = [];
     let idx = 0;
 
-    const data = fs.readFileSync(credentialsFilePath, 'utf8');
-    for (const profile of profiles) {
-      if (data.includes(`[${profile}]`)) {
-        existingProfiles.push({
-          idx: idx++, // idx 값 할당 후 증가
-          profileName: profile, // 프로필 이름 추가
-          accountId: '', // AWS 계정 ID 초기화
-          roles: [], // 역할 리스트 초기화
-        });
+    try {
+      const data = fs.readFileSync(credentialsFilePath, 'utf8');
+      for (const profile of profiles) {
+        if (data.includes(`[${profile}]`)) {
+          existingProfiles.push({
+            idx: idx++, // idx 값 할당 후 증가
+            profileName: profile, // 프로필 이름 추가
+            accountId: '', // AWS 계정 ID 초기화
+            roles: [], // 역할 리스트 초기화
+          });
+        }
+      }
+    } catch (error) {
+      // NodeJS.ErrnoException 타입 가드 함수
+      function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
+        return error instanceof Error && 'code' in error;
+      }
+      if (isErrnoException(error) && error.code === 'ENOENT') {
+        // 파일이 없을 때, 즉 ENOENT 오류가 발생했을 때 파일을 생성합니다.
+        fs.writeFileSync(credentialsFilePath, '', 'utf8');
+        fs.writeFileSync(configFilePath, '', 'utf8');
+      } else if (isErrnoException(error)) {
+        // 다른 종류의 Node.js 시스템 오류를 처리합니다.
+        throw new Error(`파일 처리 중 오류 발생: ${error.message}`);
+      } else {
+        throw new Error('알 수 없는 오류가 발생했습니다.');
       }
     }
     // 초기 프로파일 리스트를 전송합니다.

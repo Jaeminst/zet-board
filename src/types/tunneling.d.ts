@@ -1,4 +1,4 @@
-type ipcTunneling = (typeof ipcTunnelingEvents)[number];
+type ipcTunneling = (typeof window.electron.ipcTunnelingEvents)[number];
 
 interface TunnelingData {
   type: string;

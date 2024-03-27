@@ -1,13 +1,3 @@
-const ipcDatabaseEvents = [
-  'init-databases',
-  'databases-metric',
-  'get-databaseList',
-  'set-databaseList',
-  'get-databaseSettings',
-  'set-databaseSettings',
-] as const;
-type ipcDatabase = (typeof ipcDatabaseEvents)[number];
-
 interface DescribeCluster {
   Identifier: string | undefined;
   Endpoint: Endpoint | undefined;
