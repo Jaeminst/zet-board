@@ -1,12 +1,5 @@
 import { EC2Client, DescribeInstancesCommand } from '@aws-sdk/client-ec2';
 
-interface ClientConfig {
-  credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-  };
-}
-
 export async function getInstanceId(config: ClientConfig, instanceName: string): Promise<string> {
   const client = new EC2Client(config);
   const command = new DescribeInstancesCommand({

@@ -6,13 +6,6 @@ import {
   type DescribeDBInstancesCommandInput,
 } from '@aws-sdk/client-rds';
 
-interface ClientConfig {
-  credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-  };
-}
-
 /**
  * Retrieves information about RDS clusters.
  *

@@ -1,12 +1,5 @@
 import { IAMClient, GetUserCommand, type GetUserResponse, ListRolesCommand, type Role } from '@aws-sdk/client-iam';
 
-interface ClientConfig {
-  credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-  };
-}
-
 /**
  * Get an User Name
  *

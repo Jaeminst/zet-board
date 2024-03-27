@@ -5,13 +5,6 @@ import {
   type AssumeRoleCommandInput,
 } from '@aws-sdk/client-sts';
 
-interface ClientConfig {
-  credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-  };
-}
-
 /**
  * Get Caller Identity
  *

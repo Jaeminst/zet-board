@@ -22,7 +22,10 @@ const configFilePath = join(homedir(), '.aws', 'config');
 // 프로파일 정보 조회
 async function initProfile(profile: string) {
   const credentials = await getAwsCredentials(profile);
-  const config = { credentials };
+  const config = {
+    region: 'ap-northeast-2',
+    credentials,
+  };
   const getUser = await getUserName(config);
   if (!getUser || !getUser.User) {
     throw new Error('Failed to get user information');
@@ -226,7 +229,10 @@ aws_secret_access_key=${secretAccessKey}`;
     const serialNumber = selectedProfile.serialNumber;
     const tokenCode = data?.tokenCode;
     const credentials = await getAwsCredentials(profileName);
-    const config = { credentials };
+    const config = {
+      region: 'ap-northeast-2',
+      credentials,
+    };
     const getUser = await getUserName(config);
     if (!getUser || !getUser.User) {
       throw new Error('Failed to get user information');

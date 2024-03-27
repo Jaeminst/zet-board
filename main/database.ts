@@ -96,7 +96,10 @@ export function registerIpcDatabase(store: Store) {
     const tokenSuffix = data.tokenSuffix;
     const sessionProfileName = `${profileName}${tokenSuffix}`;
     const credentials = await getAwsCredentials(sessionProfileName);
-    const config = { credentials };
+    const config = {
+      region: 'ap-northeast-2',
+      credentials,
+    };
 
     const responseClusters = await describeClusters(config, {});
     if (!responseClusters || !responseClusters.DBClusters) {

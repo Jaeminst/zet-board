@@ -8,13 +8,6 @@ import {
   type TerminateSessionCommandOutput,
 } from '@aws-sdk/client-ssm';
 
-interface ClientConfig {
-  credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-  };
-}
-
 export async function startSession(
   config: ClientConfig,
   input: StartSessionCommandInput,

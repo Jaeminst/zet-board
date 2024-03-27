@@ -23,7 +23,10 @@ export function registerIpcTunneling(store: Store) {
     const profileName = `${data.profileName}`;
     const sessionProfileName = `${data.profileName}${data.tokenSuffix}`;
     const credentials = await getAwsCredentials(sessionProfileName);
-    const config = { credentials };
+    const config = {
+      region: 'ap-northeast-2',
+      credentials,
+    };
     if (type === 'database') {
       if (tunneling) {
         // 터널링 연결
