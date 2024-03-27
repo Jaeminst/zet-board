@@ -63,8 +63,18 @@ class AppUpdater {
       });
     }
     if (process.platform === 'win32') {
-      autoUpdater.on('update-downloaded', () => {
-        autoUpdater.quitAndInstall(true, true);
+      autoUpdater.on('update-downloaded', async () => {
+        const { response: userResponse } = await dialog.showMessageBox({
+          type: 'info',
+          buttons: ['OK'],
+          title: 'Application Update',
+          message: 'Application Update',
+          detail: 'A new version has been downloaded. Restart the application to apply the updates.',
+        });
+
+        if (userResponse === 0) {
+          autoUpdater.quitAndInstall(true, true);
+        }
       });
     }
   }
